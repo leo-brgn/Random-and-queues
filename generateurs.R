@@ -97,3 +97,50 @@ binary <- function(x)
     }
   }
 }
+
+Frequency <- function(x, nb)
+{
+  s_obs <- rep(0, length(x))
+  
+  for (i in 1:length(x))
+  {
+    bit_x <- binary(x[i])
+    s <- 0
+    for (j in 1:nb)
+    {
+      if (bit_x[j] == 0)
+      {
+        s <- s - 1
+      } else {
+        s <-s + 1
+      }
+    }
+    s <- abs(s)
+    s_obs[i] <- s / sqrt(nb)
+  }
+  return(s_obs)
+}
+
+Runs <- function(x, nb)
+{
+  p_vals <- rep(0, length(x))
+  tau = 2 / sqrt(nb)
+
+  for (i in 1:length(x))
+  {
+    bit_x <- rev(binary(x[i]))
+    Pi <- sum(bit_x[1:nb])
+    Pi <- Pi / nb
+    if (Pi - 0.5 >= tau)
+    {
+      p_vals[i] = 0
+    } else {
+      v <- sum(bit_x[1:nb]) + 1
+      print(v)
+      print(pnorm((abs(v - 2 * nb * Pi * (1-Pi)))/(2*sqrt(nb)*Pi*(1-Pi))))
+      p_vals[i] <- 2 * (1-pnorm((abs(v - 2 * nb * Pi * (1-Pi)))/(2*sqrt(nb)*Pi*(1-Pi))))
+      
+    }
+  }
+  return(p_vals)
+}

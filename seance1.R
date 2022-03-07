@@ -59,6 +59,30 @@ plot(ru[1:(Nsimu-1),1], ru[2:Nsimu,1], xlab='RU(i)', ylab='RU(i+1)',
 plot(stm[1:(Nsimu-1),1], stm[2:Nsimu,1], xlab='STM(i)', ylab='STM(i+1)', 
      main='Standard Minimal')
 
-# Sequence de bits pour les tests
-(bit_mt <- binary(mt[1,1]))
+# Tests sur les séquences de bits
+fr_mt <- Frequency(mt,32)
+fr_vn <- Frequency(vn,14)
+fr_ru <- Frequency(ru,31)
+fr_stm <- Frequency(stm,31)
+p_mt <- 2 * (1-pnorm(fr_mt))
+p_mt <- sum(p_mt)/length(p_mt)
+p_vn <- 2 * (1-pnorm(fr_vn))
+p_vn <- sum(p_vn)/length(p_vn)
+p_ru <- 2 * (1-pnorm(fr_ru))
+p_ru <- sum(p_ru)/length(p_ru)
+p_stm <- 2 * (1-pnorm(fr_stm))
+p_stm<- sum(p_stm)/length(p_stm)
+
+# Tests sur les séquences de bits (nombre de 1)
+p_mt <- Runs(mt,32)
+p_vn <- Runs(vn,14)
+p_ru <- Runs(ru,31)
+p_stm <- Runs(stm,31)
+p_mt <- mean(p_mt)
+p_vn <- mean(p_vn)
+p_ru <- mean(p_ru)
+p_stm <- mean(p_stm)
+
+p_test <- Runs(619,10)
+
 
