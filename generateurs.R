@@ -47,6 +47,25 @@ MersenneTwister <- function(n, p=1, graine)
   return(x)
 }
 
+# generateur RANDU
+# @params p: nombre de sequences generees
+# @params n: nombre d'entiers par sequences generee 
+# @params graine: etat initiale, graine
+# @return: une matrice qui contient p sequences (colonnes) de n entiers
+randu <- function(n, p=1, graine) 
+{
+  # vecteur de la longueur (n*p+1) construit en base de repetition de la valeur
+  # graine
+  x <- rep(graine, n*p+1)
+  
+  for(i in 2:(n*p+1))
+  {
+    x[i] <- x[i-1] * 65539 %% 2^31
+  }
+
+  x <- matrix(x[2:(n*p+1)], nrow=n, ncol=p)
+}
+
 # transformation des nombres en sequences de 32 bits
 # selon la convention Big-Indian
 binary <- function(x)
@@ -64,4 +83,3 @@ binary <- function(x)
     }
   }
 }
-

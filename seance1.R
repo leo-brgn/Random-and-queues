@@ -4,7 +4,7 @@ if(!require(randtoolbox)) install.packages("randtoolbox")
 # chargement du package randtoolbox
 library(randtoolbox)
 # chargement du module generateurs.R
-source('generateurs.R')
+source('~/Documents/INSA/IFA3/PROB/TP-Probas/generateurs.R')
 
 # definition des parametres
 sVN <- 3454 # graine pour la methode de Von Neumann
@@ -24,6 +24,8 @@ vn <- VonNeumann(Nsimu, Nrepet, sVN)
 # appel de la fonction MarsenneTwister du module generateurs.R 
 # et sauvegarde du resultat dans la variable mt
 mt <- MersenneTwister(Nsimu, Nrepet, sMT)
+
+sn <- randu(Nsimu, Nrepet, sVN)
 
 # max valeur possible 
 max_mersenne <- 2^32-1
