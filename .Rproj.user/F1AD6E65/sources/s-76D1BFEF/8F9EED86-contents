@@ -1,0 +1,133 @@
+---
+title: "Getting-Started"
+author: "Diana Nurbakova"
+date: '2022-03-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Initialisation
+
+Créer un projet `R` :
+
+`File` -> `New Project...` -> `New Directory`
+
+<center>
+![](img/init-new-dir.png){width=50%}
+</center>
+
+
+-> `New Directory` -> `New Project` (type du projet) 
+
+<center>
+![](img/init-new-project.png){width=50%}
+</center>
+
+-> Renseigner le nom du projet et son emplacement
+
+<center>
+![](img/init-project-settings.png){width=50%}
+</center>
+
+Un objet `R Project` va apparaître dans le dossier spécifié. Placer vos fichiers avec le code initial (`generateur.R` et `seance1.R`) dans le même dossier.
+
+<center>
+![](img/project-directory.png){width=50%}
+</center>
+
+Pour le bon fonctionnement du script `seance1.R`, les deux fichiers sources doivent être placés dans la même *working directory*.
+
+Sur l'onglet `Files` sur le panneau droit de l'IDE `R Studio`, on peut voir le contenu du chemin de travail :
+
+<center>
+![](img/working-directory-ide.png){width=75%}
+</center>
+
+# `Seance1.R`
+
+Notons qu'une fois la commande `source('generateurs.R')` est exécutée, les troix fonctions définies dans `generateurs.R` sont affichées sur l'onglet `Environment` sur le panneau droit de l'IDE.
+
+<center>
+![](img/functions-tab.png){width=75%}
+</center>
+
+
+# Quelques commandes utiles
+
+Pour appeler l'aide sur un objet `R` :
+
+```{r}
+# help
+? runif 
+# ou 
+help(runif)
+```
+
+L'aide va s'ouvrir sur l'onglet `Help` sur le panneau droit de l'IDE.
+
+## Vecteurs et matrices
+
+**Attention ! :** le comptage (e.g. les indices) dans le R commence avec 1
+
+```{r}
+# creation d'un vecteur a l'aide de concatenation c()
+x <- c(1, 2, 3, 4, 5)
+# acces a un element par son indice
+x[1]
+# acces aux plusieurs elements consecutifs
+x[2:4]
+# dans l'ordre inverse
+rev(x)
+# somme des elements du vecteur x
+sum(x)
+# incrementation de tous les elements
+x + 2
+# multiplication des elements par une constante
+x * 2
+```
+
+```{r}
+# creation d'une matrice
+m <- matrix(c(1,2,3,4,5,6), nrow = 3, byrow = TRUE); m
+# acces a un element par son indice
+m[1,2]
+# acces a une colonne
+m[,1]
+# acces a une ligne
+m[2,]
+```
+## Generation des séquences numériques
+
+```{r}
+# sequence de nombres consécutifs
+seq(0, 10)
+# sequence de nombres consécutifs avec le pas 2
+seq(from=0, to=10, by=2)
+# sequence de nombre consécutifs min : max (min et max y compris)
+1:5
+# vecteur de 5 éléments de la même valeur de 1 (répétition)
+rep(1,5)
+```
+
+# Test statistique
+
+## Test Visuel 
+
+### Histogrammes
+
+**Objectif :**  vérifier le caractère uniforme des valeurs générées.
+
+### Valeur obtenue en fonction de la valeur précédente
+
+**Objectif :** est-ce qu'on peut constater une structure visible dans les nuages de points obtenus ? est-ce que le fait de connaître une valeur générée permet de trouver facilement la suivante ?
+
+## Test de fréquence monobit
+
+**Objectif :** comparer la proportion de 0s et de 1s dans une séquence générée avec 1/2 (le même nombre de 0s et 1s).
+
+Soit $\varepsilon = \varepsilon_1 \varepsilon_2 ... \varepsilon_l$ une séquence de bits de la longueur $l$ qui représente un nombre, e.g. : $\varepsilon = 1011010101$ de $l=10$ correspond au nombre 725. $l$ est le nombre de bits à considérer sur 32.
+
+

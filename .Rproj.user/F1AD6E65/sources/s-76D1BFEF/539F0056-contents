@@ -1,0 +1,82 @@
+---
+title: "Generation of Discrete and Continuous Distirbutions from Uniform Distirbution"
+output: html_notebook
+---
+
+```{r}
+# number of realisations
+n <- 100
+# n realisations of a uniform r.v.
+u <- runif(n, min=0, max=1)
+```
+
+
+# Discrete Distribution
+
+## Bernoulli
+
+Let $U \sim \mathcal{U}(0,1)$. Then, $X \sim \mathcal{B}(p)$ can be represented as:
+
+$$X = \left\{\begin{array}{ll}1 & U < p \\ 0 & U \geq p\end{array}\right.$$
+
+$$\mathbb{P}(X = 1) = \mathbb{P}(U < p) = p$$
+
+<center>
+![](img/uniform-bernoulli.png){width=50%}
+</center>
+
+
+```{r}
+# Bernoulli
+p = 0.5
+u <- runif(1, min=0, max=1)
+x <- (u < p)
+```
+
+## Coin Tossing Simulation
+
+The proportion of ones in the variable `x` corresponding to a sequence of $n$ Bernoulli simulations:
+
+```{r}
+# probability of success
+p = 0.5
+# number of simulations
+n <- 1000
+# rv of uniform distribution U(0,1)
+u <- runif(n, min=0, max=1)
+# toss coin success (logical)
+x <- u < p
+
+# Calculation of the proportion of success as function of 
+# the number of simulations
+# vector of length n + 1 (sum of 1s for a given n)
+a <- numeric(n + 1)
+# vector of length n (proportion of 1s)
+avg <- numeric(n)
+for(i in 2 : n + 1){
+  a[i] = a[i-1] + x[i-1]
+  avg[i - 1] = a[i] / (i - 2)
+}
+
+# visualisation
+plot(1 : n, avg[1 : n], type = "l", lwd = 5, col = "blue", 
+     ylab = "ProportionofHeads", xlab = "CoinTossNumber", cex.main = 1.25, 
+     cex.lab = 1.5, cex.axis = 1.75)
+```
+
+
+## Binomial
+
+Binomial is a sum of Bernoullis:
+
+```{r}
+# probability of success
+p <- 0.2
+# number of realisations
+n <- 100
+# n realisations of uniform rv
+u <- runif(n, min=0, max=1)
+# x as sum of Bernoullis
+x <- sum(u < p)
+```
+

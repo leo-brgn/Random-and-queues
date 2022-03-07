@@ -1,0 +1,1211 @@
+---
+title: "Variables aléatoires"
+author: "Diana Nurbakova"
+output:
+  pdf_document: 
+    toc: true
+    toc_depth: 5
+    latex_engine: pdflatex
+    citation_package: biblatex
+    keep_tex: true
+  html_document: 
+    css: style.css
+    toc: true
+    toc_float: true
+    citation_package: biblatex
+  includes:
+      in_header: preamble.tex
+always_allow_html: true
+bibliography: bibliography.bib
+cls: chicago-fullnote-bibliography.cls
+header-includes:
+- \usepackage{xcolor}
+- \usepackage{framed}
+- \usepackage{color}
+- \usepackage{tcolorbox}
+- \usepackage{kmath}
+- \usepackage{amssymb}
+---
+
+
+```{r setup, include=FALSE}
+options(width = 100)
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+options(knitr.table.format = "latex")
+options(knitr.table.format = "html")
+
+if(!require(devtools)) install.packages("devtools")
+# if(!require(ztable)) install.packages("ztable")
+devtools::install_github("cardiomoon/ztable")
+devtools::install_github("lbusett/insert_table")
+
+# webshot::install_phantomjs()
+
+
+
+# color text
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, x)
+  } else x
+}
+
+cardSuits <- function(s, col="black") {
+#  col <- "black"
+  if (s == "hearts"){
+    xLatex <- "$\\varheartsuit$"
+    xHTML <- "&hearts;"
+    col <- "red"
+  } else if (s == "diamonds"){
+    xLatex <- "$\\vardiamondsuit$"
+    xHTML <- "&diams;"
+    col <- "red"
+  } else if (s == "clubs"){
+    xLatex <- "$\\clubsuit$"
+    xHTML <- "&clubs;"
+  } else if (s == "spades"){
+    xLatex <- "$\\spadesuit$"
+    xHTML <- "&spades;"
+  } else {
+    xLatex <- s
+    xHTML <- s
+  }
+    
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", col, xLatex)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", col, xHTML)
+  } else s
+}
+
+exmplPair <- function(){
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{red}{J$\\varheartsuit$} J$\\clubsuit$ K$\\clubsuit$ 9$\\spadesuit$ \\textcolor{red}{3$\\varheartsuit$}")
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='font-size:100px; color:red'>&#x1F0BB; </span>
+             <span style='font-size:100px;'>&#x1F0DB;  &#x1F0DE; &#x1F0A9; </span> 
+             <span style='font-size:100px; color:red'> &#x1F0B3;</span>")
+  }  
+    
+}
+
+exmplCards <- function(rang, s="spades", size="40", col="black"){
+  if (s == "hearts"){
+    xLatex <- "$\\varheartsuit$"
+    col <- "red"
+    suitSuf <- "B"
+  } else if (s == "diamonds"){
+    xLatex <- "$\\vardiamondsuit$"
+    col <- "red"
+    suitSuf <- "C"
+  } else if (s == "clubs"){
+    xLatex <- "$\\clubsuit$"
+    suitSuf <- "D"
+  } else if (s == "spades"){
+    xLatex <- "$\\spadesuit$"
+    suitSuf <- "A"
+  } else {
+    xLatex <- s
+    xHTML <- s
+  }
+  
+  if (rang == "A"){
+      suf <- "1"
+  } else if (rang %in% c("2", "3", "4", "5", "6", "7", "8", "9")){
+    suf <- rang
+  } else if (rang == "10"){
+    suf <- "A"
+  } else if (rang == "J"){
+    suf <- "B"
+  } else if (rang == "Q"){
+    suf <- "D"
+  } else if (rang == "K"){
+    suf <- "E"
+  } else {
+    suf <- rang
+  }
+  
+  xHTML = paste("&#x1F0", suitSuf, suf, ";", sep="")
+  
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s%s}", col, rang, xLatex)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='font-size:%spx; color:%s'>%s</span>", size, col, xHTML)
+  }  
+  
+  
+}
+
+gifImgCollection <- function(imgPath, nb=6){
+  if (knitr::is_latex_output()) {
+    #for (i in seq(0,nb)){
+    #  img <- paste(imgPath, "-", i, ".png", sep="")
+    #  #sprintf("\\includegraphics[width=0.5\textwidth]{%s}", img)
+    #  sprintf("![](%s)", img)
+    #  print(img)
+    #}
+    sprintf("![](%s)", paste(imgPath, ".png", sep=""))
+    #sprintf("![](img/coffee-0.png)")
+  } else if (knitr::is_html_output()) {
+    img <- paste(imgPath, "-gif.gif", sep="")
+    sprintf("![](%s)", img)
+  } 
+}
+
+
+getZtable <- function(){
+  if (knitr::is_html_output()){
+    rowH <- as.character(seq(0,4,0.1))
+    rowH[1] <- "0.0"
+    rowH[11] <- "1.0"
+    rowH[21] <- "2.0"
+    rowH[31] <- "3.0"
+    rowH[41] <- "4.0"
+    z_tbl <- tibble::tribble(
+      ~"+0.00", ~"+0.01", ~"+0.02", ~"+0.03", ~"+0.04", ~"+0.05", ~"+0.06", ~"+0.07", ~"+0.08", ~"+0.09",
+      0.50000, 0.50399, 0.50798, 0.51197, 0.51595, 0.51994, 0.52392, 0.52790, 0.53188, 0.53586, 
+      0.53983, 0.54380, 0.54776, 0.55172, 0.55567, 0.55962, 0.56360, 0.56749, 0.57142, 0.57535, 
+      0.57926, 0.58317, 0.58706, 0.59095, 0.59483, 0.59871, 0.60257, 0.60642, 0.61026, 0.61409, 
+      0.61791, 0.62172, 0.62552, 0.62930, 0.63307, 0.63683, 0.64058, 0.64431, 0.64803, 0.65173, 
+      0.65542, 0.65910, 0.66276, 0.66640, 0.67003, 0.67364, 0.67724, 0.68082, 0.68439, 0.68793, 
+      0.69146, 0.69497, 0.69847, 0.70194, 0.70540, 0.70884, 0.71226, 0.71566, 0.71904, 0.72240, 
+      0.72575, 0.72907, 0.73237, 0.73565, 0.73891, 0.74215, 0.74537, 0.74857, 0.75175, 0.75490, 
+      0.75804, 0.76115, 0.76424, 0.76730, 0.77035, 0.77337, 0.77637, 0.77935, 0.78230, 0.78524, 
+      0.78814, 0.79103, 0.79389, 0.79673, 0.79955, 0.80234, 0.80511, 0.80785, 0.81057, 0.81327, 
+      0.81594, 0.81859, 0.82121, 0.82381, 0.82639, 0.82894, 0.83147, 0.83398, 0.83646, 0.83891, 
+      0.84134, 0.84375, 0.84614, 0.84849, 0.85083, 0.85314, 0.85543, 0.85769, 0.85993, 0.86214, 
+      0.86433, 0.86650, 0.86864, 0.87076, 0.87286, 0.87493, 0.87698, 0.87900, 0.88100, 0.88298, 
+      0.88493, 0.88686, 0.88877, 0.89065, 0.89251, 0.89435, 0.89617, 0.89796, 0.89973, 0.90147, 
+      0.90320, 0.90490, 0.90658, 0.90824, 0.90988, 0.91149, 0.91308, 0.91466, 0.91621, 0.91774, 
+      0.91924, 0.92073, 0.92220, 0.92364, 0.92507, 0.92647, 0.92785, 0.92922, 0.93056, 0.93189, 
+      0.93319, 0.93448, 0.93574, 0.93699, 0.93822, 0.93943, 0.94062, 0.94179, 0.94295, 0.94408, 
+      0.94520, 0.94630, 0.94738, 0.94845, 0.94950, 0.95053, 0.95154, 0.95254, 0.95352, 0.95449, 
+      0.95543, 0.95637, 0.95728, 0.95818, 0.95907, 0.95994, 0.96080, 0.96164, 0.96246, 0.96327, 
+      0.96407, 0.96485, 0.96562, 0.96638, 0.96712, 0.96784, 0.96856, 0.96926, 0.96995, 0.97062, 
+      0.97128, 0.97193, 0.97257, 0.97320, 0.97381, 0.97441, 0.97500, 0.97558, 0.97615, 0.97670, 
+      0.97725, 0.97778, 0.97831, 0.97882, 0.97932, 0.97982, 0.98030, 0.98077, 0.98124, 0.98169, 
+      0.98214, 0.98257, 0.98300, 0.98341, 0.98382, 0.98422, 0.98461, 0.98500, 0.98537, 0.98574, 
+      0.98610, 0.98645, 0.98679, 0.98713, 0.98745, 0.98778, 0.98809, 0.98840, 0.98870, 0.98899, 
+      0.98928, 0.98956, 0.98983, 0.99010, 0.99036, 0.99061, 0.99086, 0.99111, 0.99134, 0.99158, 
+      0.99180, 0.99202, 0.99224, 0.99245, 0.99266, 0.99286, 0.99305, 0.99324, 0.99343, 0.99361, 
+      0.99379, 0.99396, 0.99413, 0.99430, 0.99446, 0.99461, 0.99477, 0.99492, 0.99506, 0.99520, 
+      0.99534, 0.99547, 0.99560, 0.99573, 0.99585, 0.99598, 0.99609, 0.99621, 0.99632, 0.99643, 
+      0.99653, 0.99664, 0.99674, 0.99683, 0.99693, 0.99702, 0.99711, 0.99720, 0.99728, 0.99736, 
+      0.99744, 0.99752, 0.99760, 0.99767, 0.99774, 0.99781, 0.99788, 0.99795, 0.99801, 0.99807, 
+      0.99813, 0.99819, 0.99825, 0.99831, 0.99836, 0.99841, 0.99846, 0.99851, 0.99856, 0.99861, 
+      0.99865, 0.99869, 0.99874, 0.99878, 0.99882, 0.99886, 0.99889, 0.99893, 0.99896, 0.99900, 
+      0.99903, 0.99906, 0.99910, 0.99913, 0.99916, 0.99918, 0.99921, 0.99924, 0.99926, 0.99929, 
+      0.99931, 0.99934, 0.99936, 0.99938, 0.99940, 0.99942, 0.99944, 0.99946, 0.99948, 0.99950, 
+      0.99952, 0.99953, 0.99955, 0.99957, 0.99958, 0.99960, 0.99961, 0.99962, 0.99964, 0.99965, 
+      0.99966, 0.99968, 0.99969, 0.99970, 0.99971, 0.99972, 0.99973, 0.99974, 0.99975, 0.99976, 
+      0.99977, 0.99978, 0.99978, 0.99979, 0.99980, 0.99981, 0.99981, 0.99982, 0.99983, 0.99983, 
+      0.99984, 0.99985, 0.99985, 0.99986, 0.99986, 0.99987, 0.99987, 0.99988, 0.99988, 0.99989, 
+      0.99989, 0.99990, 0.99990, 0.99990, 0.99991, 0.99991, 0.99992, 0.99992, 0.99992, 0.99992, 
+      0.99993, 0.99993, 0.99993, 0.99994, 0.99994, 0.99994, 0.99994, 0.99995, 0.99995, 0.99995, 
+      0.99995, 0.99995, 0.99996, 0.99996, 0.99996, 0.99996, 0.99996, 0.99996, 0.99997, 0.99997, 
+      0.99997, 0.99997, 0.99997, 0.99997, 0.99997, 0.99997, 0.99998, 0.99998, 0.99998, 0.99998,
+      )
+    
+    require(rhandsontable)
+    rhandsontable(z_tbl, rowHeaders = rowH,
+                   digits = 3, useTypes = FALSE, search = FALSE,
+                   width = 900, height = 1000)
+
+  } else if (knitr::is_latex_output()){
+    sprintf("![](img/z-table.png)")
+  }
+}
+
+
+```
+
+
+
+\setlength{\fboxsep}{.8em}
+
+\definecolor{aliceblue}{rgb}{0.94, 0.97, 1.0}
+\definecolor{bluegray}{rgb}{0.4, 0.6, 0.8}
+\definecolor{glaucous}{rgb}{0.38, 0.51, 0.71}
+\definecolor{hanblue}{rgb}{0.27, 0.42, 0.81}
+\definecolor{mediumpersianblue}{rgb}{0.0, 0.4, 0.65}
+\definecolor{sapphire}{rgb}{0.03, 0.15, 0.4}
+\definecolor{cambridgeblue}{rgb}{0.64, 0.76, 0.68}
+\definecolor{celadon}{rgb}{0.67, 0.88, 0.69}
+\definecolor{darkcyan}{rgb}{0.0, 0.55, 0.55}
+\definecolor{darkseagreen}{rgb}{0.56, 0.74, 0.56}
+\definecolor{darkolivegreen}{rgb}{0.33, 0.42, 0.18}
+\definecolor{charcoal}{rgb}{0.21, 0.27, 0.31}
+\definecolor{darkgreen}{rgb}{0.0, 0.2, 0.13}
+\definecolor{feldgrau}{rgb}{0.3, 0.36, 0.33}
+\definecolor{grannysmithapple}{rgb}{0.66, 0.89, 0.63}
+\definecolor{lightgreen}{rgb}{0.56, 0.93, 0.56}
+\definecolor{magicmint}{rgb}{0.67, 0.94, 0.82}
+\definecolor{mossgreen}{rgb}{0.68, 0.87, 0.68}
+\definecolor{sandstorm}{rgb}{0.93, 0.84, 0.25}
+\definecolor{stildegrainyellow}{rgb}{0.98, 0.85, 0.37}
+\definecolor{beaver}{rgb}{0.62, 0.51, 0.44}
+\definecolor{burntumber}{rgb}{0.54, 0.2, 0.14}
+
+\newtcolorbox{blackbox}{
+  colback=black,
+  colframe=orange,
+  coltext=white,
+  boxsep=5pt,
+  arc=4pt}
+  
+
+\newtcolorbox{lightbluebox}{
+  colback=aliceblue,
+  colframe=aliceblue,
+  coltext=sapphire,
+  boxsep=5pt,
+  arc=4pt}
+
+\newtcolorbox{lightgreenbox}{
+  colback=mossgreen!50!white,
+  colframe=mossgreen,
+  coltext=darkgreen,
+  boxsep=5pt,
+  arc=4pt}
+  
+\newtcolorbox{lightgreenframe}{
+  colback=white,
+  colframe=mossgreen,
+  coltext=darkgreen,
+  boxsep=5pt,
+  arc=4pt}
+  
+\newtcolorbox{lightyellowbox}{
+  colback=stildegrainyellow!40!white,
+  colframe=sandstorm,
+  coltext=burntumber,
+  boxsep=5pt,
+  arc=4pt}
+  
+\newtcolorbox{lightyellowframe}{
+  colback=white,
+  colframe=sandstorm,
+  coltext=burntumber,
+  boxsep=5pt,
+  arc=4pt}
+
+
+# Variable aléatoire : éventualité-gain
+
+<center>
+\centering
+
+![](img/rv.png){width=75%}
+</center>
+
+\raggedright
+
+Imaginons qu'on met en place une expériance aléatoire en lançant une pièce. Les issues possibles sont $pile$ et $face$, autrement dit, l'univers est $\Omega = \{pile, face\}$. Ce dernier est plutôt abstrait et une telle représentation n'est pas toujours pratique pour les calculs. 
+
+Nous aimerions donc de ``quantifier" ces issues, en faisant une correspondance de ces issues aux nombres. L'application des issues à ce nouvel espace est une variable aléatoire. Ainsi, une variable aléatoire peut être considérée comme un résultat d'une expérience aléatoire qu'on peut mesurer ou compter. 
+
+Notons que dans ce contexte, le terme *variable* est différent de celui de l'algèbre. Une variable aléatoire peut prendre plusieurs valeurs avec différentes probabilités. 
+
+Notons aussi qu'une variable aléatoire peut être plus "complèxe" qu'un recodage directe d'issues en nombres, e.g. la somme de résultats de 5 lancers d'un dé cubique  
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+Soit $(\Omega, \mathcal{A})$ un espace d'evènements de l'espace probabilisé $(\Omega, \mathcal{A}, \mathbb{P})$ et $(E, \mathcal{E})$ un espace mesurable.  Une **variable aléatoire, v.a.** (en. *random variable, r.v.*) $X$ de $\Omega$ vers $E$ est une fonction mesurable :
+$$X : \Omega \rightarrow E$$ 
+
+telle que : 
+
+$$\forall A' \in \mathcal{E}, X^{-1}(A') \in \mathcal{A}$$
+
+où $X^{-1}(A')$ est l'image réciproque $X^{-1}(A') = \{\omega\in \Omega | X(\omega)\in A'\}\in \mathcal{A}$.
+
+Souvent, on va considérer le cas où $E \subset \mathbb{R}$. Une **variable aléatoire réelle, v.a.r.** (en. *real-valued random variable*) sur l'espace d'évènements $(\Omega, \mathcal{A})$ est une fonction mesurable $X : \Omega \rightarrow \mathbb{R}$, telle que :
+$$\forall x\in \mathbb{R}, X^{-1}(]-\infty, x])\in \mathcal{A}$$
+
+::::
+</div>
+
+**Remarque :** Pour la notation de variables aléatoires, les lettres majuscules sont utilisées par la convention.
+
+> Quelles sont les valeurs de la v.a. $X$ ?
+
+Selon la valeur qu'une variable aléatoire peut prendre, on distingue les différents types de variables aléatoires. 
+
+<center>
+
+\centering
+
+![](img/rv-types.png){width=75%}
+</center>
+
+\raggedright
+
+### Variable aléatoire discrète
+
+<div class="alert alert-success">
+
+:::: {.lightgreenbox data-latex=""}
+
+Une v.a.r. $X$ est appelée **discrète** (en. *discrete r.v.*) si elle ne prend qu'un nombre dénombrable et/ou fini de valeurs dans $\mathbb{R}$, i.e. $X(\Omega) = \left\{x_j\in \mathbb{R}, j\in J\right\}$ avec $J \subset \mathbb{N}$.
+
+::::
+</div>
+
+Voici quelques exemples : $X =$ "*Le nombre de posts TikTok publiés dans la prochaine heure*", $X =$ "*Le taux d'hémoglobine dans le sang de la population*".
+
+### Variable aléatoire continue
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+Dans le cas générale, une v.a.r. $X$ est appelée **continue** (en. *continuous r.v.*) si son image est indénombrablement infinie (souvent un intervalle).
+
+Dans le cas plus concret, il s'agit de la *continuité absolue* (au sens de Lebesgue). 
+
+::::
+</div>
+
+Voici quelques exemples : $X =$ "*Le poids (exacte) d'un(e) étudiant(e) de l'INSA pris(e) au hasard*", $X =$ "*La hauteur (exacte) franchie par l'athlète gagnant les sauts à la perche lors de prochains Jeux Olympiques*", $X =$ "*Le niveau de réchauffement climatique atteint vers 2030*".
+
+# Fonction de répartition et Loi d'une variable aléatoire réelle
+
+<div class="alert alert-success" style='background-color:white'>
+
+:::: {.lightgreenframe data-latex=""}
+
+Un espace $(\Omega, \mathcal{A})$ est munie d'une mesure de probabilité $\mathbb{P}$ dans l'espace probabilisé $(\Omega, \mathcal{A}, \mathbb{P})$. Grâce à la mésurabilité de la variable aléatoire $X$, il est possible de définir la probabilité $\mathbb{P}_X: \mathcal{E} \rightarrow [0,1]$ (aussi appelée **la loi de probabilité de la v.a.r. $X$** ou juste **loi de la v.a.r. $X$** (en. *probability distribution*)) sur l'espace mesurable $(E, \mathcal{E})$ :
+$$\forall A'\in \mathcal{E}, \ \ \mathbb{P}_X(A') = \mathbb{P}(X^{-1}(A')) = \mathbb{P}(X\in A')$$
+
+Ainsi, une loi de probabilité est une fonction qui décrit la probabilité d'occurrence d'issues possibles de l'expérience aléatoire. 
+
+::::
+</div>
+
+> Comment est-ce que la v.a.r. $X$ est réparti ?
+
+Pour définir la répartition d'une v.a.r. les différentes représentations peuvent être utilisés comme : des graphes, des tables (surtout dans le cas d'une v.a. discrète), des fonctions. 
+
+<center>
+
+\centering
+
+![](img/distribution-ways.png){width=75%}
+</center>
+
+\raggedright
+
+Dans le cas général, on peut parler de la fonction de répartition qui caractérise la loi de probabilité.
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+Soit $X$ une v.a.r. sur l'espace probabilisé $(\Omega, \mathcal{A}, \mathbb{P})$. On appelle **la fonction de répartition d'une v.a.r. $X$** (en. *cumulative distribution function*) ou  **la fonction de distribution cumulative d'une v.a.r. $X$** l'application $F_X$ qui à $\forall x\in \mathbb{R}$ associe la probabilité d'obtenir une valeur inférieure ou égale à $x$, i.e. :
+$$F_X: \ \left.
+    \begin{array}{ll}
+        \mathbb{R}\rightarrow [0,1]  \\
+        x \rightarrow \mathbb{P}(X^{-1}(]-\infty,x]))
+    \end{array}
+\right.
+$$
+Autrement dit, $F_X(x) = \mathbb{P}(X\leq x)$. 
+
+::::
+</div>
+
+<div class="alert alert-success" style='background-color:white'>
+:::: {.lightgreenframe data-latex=""}
+
+Les propriétés de base de la fonction de répartition d'une v.a.r. :
+
+* $F_X$ est toujours croissante, i.e. $\forall (a,b)\in \mathbb{R}^2,\ a \leq b \Rightarrow F_X(a) \leq F_X(b)$ 
+* $F_X$ est continue à droite 
+* $\lim\limits_{x\rightarrow-\infty} F_X(x) = 0$ et $\lim\limits_{x\rightarrow+\infty} F_X(x) = 1$
+
+Notons que $F_X$ est une fonction monotonne bornée :
+$$\forall x\in \mathbb{R}, \ 0\leq F_X(x)\leq 1$$
+
+::::
+</div>
+
+<div class="alert alert-success" style='background-color:white'>
+:::: {.lightgreenframe data-latex=""}
+
+La fonction de répartition permet de calculer la probabilité d'une v.a.r. $X$ d'être incluse dans un intervalle semi-ouvert à gauche $]a,b]$ où $a < b$ comme suit :
+$$\mathbb{P}(X \in ]a,b]) = \mathbb{P}(a < X \leq b) = F_X(b)-F_X(a)$$
+
+::::
+</div>
+
+
+## Variables discrètes 
+
+### Fonction de masse
+Supposons qu'on s'intéresse au nombre de tasses de café qu'un étudiant prend avant la pause midi. 
+Dans le tableau, on présente toutes les valeurs à probabilité non nulle. Dans notre cas, ce sont : $1$, $2$, $3$, $4$, $5$. Supposons aussi qu'on connait la probabilité de chacune de ses valeurs. Ecrivons-les dans le même tableau. 
+
+<center>
+
+\centering
+
+![](img/coffee-init.png){width=50%}
+
+</center>
+
+
+\raggedright
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+Soit $X$ une v.a.r. discrète, $X(\Omega) = \left\{x_j\in \mathbb{R}, j\in J\right\}$ avec $J \subset \mathbb{N}$. **La fonction de masse de la v.a.r. $X$** (en. *probability mass function, pmf*) est une application $p$ telle que : 
+$$p \ \left.
+    \begin{array}{ll}
+        J\rightarrow [0,1]  \\
+        j \rightarrow p_j
+    \end{array}
+\right.$$
+où $p_j = \mathbb{P}(X = x_j)$, en considérant que $\forall j \in \mathbb{N}\setminus J, \ p_j = 0$.
+
+La fonction de masse $p$ a des propriétés suivantes :
+
+* $\forall j\in J, \ p_j \geq 0,\ p_j \in [à,1]$
+* $\sum\limits_{j \in \mathbb{N}} p_j = 1$
+
+::::
+</div>
+
+Vérifions que les valeurs présentées dans le tableau forment une fonction de masse valide :
+
+$$\sum_{i=1}^n p(x_i) = 0.4 + 0.25 + 0.2 + 0.1 + 0.05 = \mathbf{1}$$
+et toutes $p_j \geq 0$.
+
+Les conditions sont bien satisfaites.
+
+On peut représenter la fonction de masse de $X$ sous forme d'un graphique :
+
+<center>
+
+\centering
+
+![](img/coffee-pmf-plot.png)
+
+
+</center>
+
+\raggedright
+
+### Fonction de répartition
+
+Regardons maintenant comment on peut définir la fonction de répartition d'une v.a.r. discrète.
+
+Comme précisé avant, la fonction de répartition est une fonction cumulative. Dans le cas d'une v.a.r. discrète :
+
+<center>
+
+\centering
+
+`r gifImgCollection(imgPath="img/coffee", nb=6)`
+
+</center>
+
+
+\raggedright
+
+Ainsi, nous obtenons les valeurs suivantes :
+
+<center>
+
+\centering
+
+![](img/coffee-6.png){width=50%}
+
+
+</center>
+
+\raggedright
+
+<div class="alert alert-success" style='background-color:white'>
+
+:::: {.lightgreenframe data-latex=""}
+
+Soit $X$ une v.a.r. discrète. Pour tout $k \in \mathbb{N}$ :
+$$F_X(x) = \sum_{i=1}^k p_i$$
+
+::::
+</div>
+
+Représentons la fonction de répartition sous forme de graphique :
+
+<center>
+
+\centering
+
+![](img/coffee-cdf-plot.png)
+
+
+</center>
+
+
+\raggedright
+
+La fonction de répartition d'une v.a.r. discrète est constante par morceaux et admet les points de discontinuité $\{x_j, j\in J\}$
+
+<center>
+
+\centering
+
+![](img/coffee-cdf-plot-2.png){width=50%}
+
+</center>
+
+
+\raggedright
+
+#### Caractérisation de la loi d'une v.a.r. discrète par la fonction de masse
+
+Notons que la fonction de masse $p$ caractérise la loi d'une v.a.r. discrète $X$. Dans le cas d'une v.a.r. discrète $X$ définie sur $(\Omega, \mathcal{A}, \mathbb{P})$ :
+$$\mathbb{P}_X(A) = \sum_{j\in \mathbb{N}}\left(\mathbb{P}(X=x_j)\times \mathbb{I}_A(x_j)\right) = \sum_{j\in \mathbb{N}}\left(p_j\times \mathbb{I}_A(x_j)\right)$$
+où $A$ est un borélien de $\mathbb{R}$, $\mathbb{I}_A(x) = \left\{ \begin{array}{ll} 1 \mbox{ si } x\in A  \\ 0 \mbox{ si } x\notin A \end{array}\right.$ est la fonction indicatrice de l'ensemble $A$.
+
+## Variables continues
+
+### Fonction de densité
+
+<div class="alert alert-success">
+
+:::: {.lightgreenbox data-latex=""}
+Soit $X$ un v.a.r. absolument continue. **La fonction de densité** ou **densité de probabilité** (en. *probability density function, pdf*) $f_X(x)$ est une fonction positive et intégrable sur $\mathbb{R}$, telle que :
+$$\mathbb{P}(a\leq X\leq b) = \int_{a}^{b}f(t)dt$$ 
+
+<center>
+
+\centering
+
+![](img/cont-rv-Pab.png)
+
+
+</center>
+
+\raggedright
+
+Notons que : 
+$$f_X(x) = \frac{d}{dx}F_X(x)$$
+presque partout.
+
+Les propriétés :
+
+* $\forall t\in \mathbb{R}, \ f_X(t)\in \mathbb{R}^+$
+* $\int_{\mathbb{R}}f(t)dt = 1$
+
+::::
+</div>
+
+
+### Fonction de répartition
+
+$$F_X(x) = \int_{-\infty}^{x}f_X(t)dt$$
+
+Ainsi, la fonction de répartition $F_X(x)$ correspond à l'aire sous la courbe $f_X(x)$ :
+
+<center>
+
+\centering
+
+![](img/pdf-cont.png)
+
+
+</center>
+
+\raggedright
+
+<center>
+
+\centering
+
+![](img/continuous-pdf-all.png){width=50%}
+
+</center>
+
+
+\raggedright
+
+Similairement à la recherche de la probabilité de l'évènement contraire, on peut trouver la probabilité $\mathbb{P}(X > a)$ comme suit :
+$$\mathbb{P}(X > a) = 1 - \mathbb{P}(X \leq a)$$
+
+<center>
+
+\centering
+
+![](img/normal-right.png)
+
+</center>
+
+\raggedright
+
+#### Caractérisation de la loi d'une v.a.r. continue par la fonction de densité
+
+Notons que la fonction de densité $f(x)$ caractérise la loi d'une v.a.r. absolument continue $X$. Ainsi, dans le cas d'une v.a.r. discrète $X$ définie sur $(\Omega, \mathcal{A}, \mathbb{P})$ avec $A$ étant un borélien de $\mathbb{R}$:
+$$\mathbb{P}_X(A) = \int_{A}f_X(t)dt = \int_{\mathbb{R}}f_X(t)\times \mathbb{I}_A(t)dt$$
+
+### Exemple de calcul
+
+Prenons l'exemple proposé dans [@orloff2014].
+
+La v.a. $X$ est définie sur l'intervalle $[0,2]$ par la fonction de densité $f(x) = cx^2$. 
+
+1. Quelle est la valeur de $c$ ?
+2. Quelle est la fonction de répartition $F(x)$ ?
+3. Quelle est la probabilité $\mathbb{P}(1\leq X \leq 2)$ ?
+
+**Solution**
+
+#### 1. Quelle est la valeur de $c$ ?
+
+La somme des probabilités sur tout l'intervalle $[a,b]$ sur lequel $X$ est défini doit être $égale à 1$, i.e. $\int_a^b f(x)dx = 1$. Dans notre cas, $X$ est défini sur $[0,2]$. Alors :
+
+$$\int_a^b f(x)dx = \int_0^2 cx^2 dx = c\frac{x^3}{3}\Bigg\rvert_{0}^2 = c\frac{8}{3} - 0 = c\frac{8}{3} = 1$$
+D'où $c = \mathbf{\frac{3}{8}}$.
+
+En remplaçant $c$ par cette valeur, on obtient $f(x) = \frac{3}{8}x^2$.
+
+#### 2. Quelle est la fonction de répartition $F(x)$ ?
+
+Pour rappel, la fonction de répartition est donné par $F(x) = \mathbb{P}(X\leq x) = \int_{-\infty}^x f(t)dt$. Ainsi, en sachant $f(x)$, on peut trouver $F(x)$.
+
+Notons que par définition, la fonction de densité $f(x)=0$ en dehors de l'intervalle sur lequel $X$ est défini.  Dans notre cas, on peut réécrire $f(x)$ de la façon suivante :
+$$f(x) = \left\{ \begin{array}{ll} 0, \mbox{ si } x < 0 \\ \frac{3}{8}x^2, \mbox{ si } x\in [0,2] \\ 0, \mbox{ si } x>2 \end{array} \right.$$
+Donc, la fonction de répartition $F(x) = 0, \mbox{ si } x<0$ et $F(x) = 1, \mbox{ si } x>2$. Il reste donc trouver la fonction de répartition pour $x\in [0, 2]$.
+
+$$F(x) = \int_{-\infty}^x f(t)dt = \int_{\mathbf{0}}^x ct^2dt = c\frac{t^3}{3}\Bigg\rvert_{0}^x = c\frac{x^3}{3} = \frac{3}{8}\cdot\frac{x^3}{3} = \frac{x^3}{8} = \left(\frac{x}{2}\right)^3$$
+Alors, en rassemblant tout :
+
+$$F(x) = \left\{ \begin{array}{ll} 0, \mbox{ si } x < 0 \\ \left(\frac{x}{2}\right)^3, \mbox{ si } x\in [0,2] \\ 1, \mbox{ si } x>2 \end{array} \right.$$
+
+#### 3. Quelle est la probabilité $\mathbb{P}(1\leq X \leq 2)$ ?
+On peut aborder le calcul de $\mathbb{P}(a\leq X\leq b)$ de deux façons :
+
+1. $\mathbb{P}(a\leq X\leq b) = \int_a^b f(x)dx$
+2. $\mathbb{P}(a\leq X\leq b) = F(b) - F(a)$
+
+Essayons les deux options.
+
+##### 3.1. Option 1 : $\mathbb{P}(a\leq X\leq b) = \int_a^b f(x)dx$
+
+$$\mathbb{P}(1\leq X\leq 2) = \int_1^2 cx^2 dx = c\frac{x^3}{3}\Bigg\rvert_{1}^2 = \frac{3}{8}\cdot\frac{x^3}{3}\Bigg\rvert_{1}^2 = \frac{x^3}{8}\Bigg\rvert_{1}^2 = \frac{8}{8} - \frac{1}{8} = \mathbf{\frac{7}{8}}$$
+
+##### 3.2. Option 2 : $\mathbb{P}(a\leq X\leq b) = F(b) - F(a)$
+
+Notons que $1\in [0,2]$ et $2\in [0,2]$. Sur l'intervalle en question, la fonction de répartition prend la forme $F(x) = \left(\frac{x}{2}\right)^3$. Donc : 
+
+$$\mathbb{P}(1\leq X\leq 2) = F(2) - F(1) = \left(\frac{2}{2}\right)^3 - \left(\frac{1}{2}\right)^3 = 1 - \frac{1}{8} = \mathbf{\frac{7}{8}}$$
+
+## Bilan
+Résumons les notions de la loi de probabilité de la façon suivante :
+
+<center>
+
+\centering
+
+![](img/summary-distribution.png)
+
+
+</center>
+
+\raggedright
+
+
+# Moments d'une variable aléatoire
+
+Il existe des caractéristiques numériques de la distribution d'une v.a.r. qu'on appelle des **moments** (en. *moments*). 
+On va parler des moments qui montre le caractère central (en. *central tendency*) de la distribution (espérance et médiane) et sa dispersion (variance et écart-type). 
+
+<center>
+
+\centering
+
+![](img/moments.png){width=60%}
+
+
+</center>
+
+\raggedright
+
+## Espérance 
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+**L'espérance** (en. *expectation* ou *expected value* ou *mean* ou *average* ou *first moment*) d'une v.a.r. $X$, notée $\mathbb{E}X$ ou $\mathbb{E}[X]$ ou $\mathbb{E}(X)$ est une généralisation de la valeur moyenne pondérée. 
+
+Son calcul (lorsque cette quantité existe) dépend de la nature de $X$ :
+
+* v.a.r. discrète :
+$$\mathbb{E}[X] = \sum_i x_ip_i = \sum_i x_iP(X=x)$$
+* v.a.r. continue :
+$$\mathbb{E}[X] = \int_{-\infty}^{+\infty}tf(t)dt$$
+Notons que ces définitions peuvent être généralisées pour l'espérance d'une v.a.r. $g(X)$, où $g : X(\Omega) \rightarrow \mathbb{R}$ :
+
+* cas dicret : $\mathbb{E}[g(X)] = \sum_i g(x_i)p_i = \sum_i g(x_i)P(X=x)$
+* cas contiue : $\mathbb{E}[g(X)] = \int_{-\infty}^{+\infty}g(t)f(t)dt$
+
+::::
+</div>
+
+<div class="alert alert-success" style='background-color:white'>
+:::: {.lightgreenframe data-latex=""}
+
+**Propriétés :** 
+
+* $\mathbb{E}[X] \geq 0$
+* $\mathbb{E}[X + Y] = \mathbb{E}[X] + \mathbb{E}[Y]$
+* $\mathbb{E}[aX + b] = a\mathbb{E}[X] + b$
+
+Notons que ces résultats peuvent être généralisés pour l'espérance d'une v.a.r. $g(X)$, où $g : X(\Omega) \rightarrow \mathbb{R}$ : 
+
+* $\mathbb{E}[g(X)] \geq 0$
+* $\mathbb{E}[g_1(X) + g_2(X)] = \mathbb{E}[g_1(X)] + \mathbb{E}[g_2(X)]$
+* $\mathbb{E}[ag(X)] = a\mathbb{E}[g(X)] + b$
+* soit $X$ une v.a.r. continue, $g_1$ et $g_2$ deux fontions t.q. $g_1 \leq g_2$, alors $\mathbb{E}[g_1(X)] \leq \mathbb{E}[g_2(X)]$
+* si $X$ est une v.a.r. constante sur $\Omega$ et $g$ une fonction quelconque, alors $\mathbb{E}[g(X)] = g(X)$
+
+Les démonstrations de ces propriétés peuvent être trouvées dans @balac.
+
+::::
+</div>
+
+Une autre propriété peut être formulée sous forme de l'*inégalité de Markov* :
+
+<div class="alert alert-warning">
+:::: {.lightyellowbox data-latex=""}
+
+**Inégalité de Markov** : Soit $X$ une v.a.r. Alors :
+$$\forall a> 0, a\in \mathbb{R} :  \ \  \mathbb{P}(|X|\geq a) \leq \frac{1}{a} \mathbb{E}[|X|]$$
+
+::::
+</div>
+
+**Exemple :** Si chaque fois que vous obtenez *face* en lançant une pièce, vous gagnez 5 euros, et chaque fois que vous obtenez *pile*, vous perdez 5 euros. Quelle est le gain moyen ou autrement dit, l’espérance de gain ? 
+
+$$\mathbb{E}[X] = \sum_i x_ip_i = \sum_i x_iP(X=x) = 5\times \frac{1}{2} + (-5)\times \frac{1}{2} = \mathbf{0}$$
+En moeyenne, on gagne rien.
+
+
+## Variance et écart-type
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+**La variance** (en. *variance*) de la v.a.r. $X$, notée $Var(X)$ ou $\sigma^2$, est une mesure de la dispersion de données autour de son espérance $\mathbb{E}X$. 
+
+Son calcul (lorsque cette quantité existe) dépend de la nature de $X$ :
+
+* v.a.r. discrète : 
+$$Var(X) = \mathbb{E}[(X-\mathbb{E}X)^2]=\mathbb{E}[X^2]-(\mathbb{E}X)^2=\sum_i (x_i-\mathbb{E}X)^2 p_i$$
+
+* v.a.r. continue :
+$$Var(X) = \mathbb{E}[(X-\mathbb{E}X)^2]=\mathbb{E}[X^2]-(\mathbb{E}X)^2=\int_{a}^{b}(x-\mathbb{E}X)^2f(x)dx$$
+
+::::
+</div>
+
+<div class="alert alert-success" style='background-color:white'>
+:::: {.lightgreenframe data-latex=""}
+
+**Propriétés :**
+
+* $Var(X) \geq 0$
+* $Var(X + Y) = Var[X] + Var[Y]\mbox{, (si } X\mbox{ et } Y\mbox{ indép.)}$
+* $Var(aX + b) = a^2Var(X)$
+
+::::
+</div>
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+**L'écart-type** (en. *standard deviation, std*) de la v.a.r. $X$, noté $\sqrt{Var(X)}$ ou $\sigma$, est une mesure de l’écart entre les valeurs prises par $X$ et son espérance $\mathbb{E}X$
+
+$\sigma(X)=\sigma_X = \sqrt{Var(X)}$
+
+::::
+</div>
+
+Remarquons qu'il existe d'autres propriétés, dont une peut être formulée sous forme de l'*inégalité de Bienaymé-Tchebychev* :
+
+<div class="alert alert-warning">
+:::: {.lightyellowbox data-latex=""}
+
+**Inégalité de Bienaymé-Tchebychev** : Soit $X$ une v.a.r. Alors :
+$$\forall \alpha > 0, \alpha\in \mathbb{R} : \ \ \mathbb{P}(|X - \mathbb{E}X|\geq \alpha) \leq \frac{Var(X)}{\alpha^2}$$
+
+::::
+</div>
+
+## Moments de l'ordre $p$
+
+De la façon plus généralle, on peut définir les moments comme suit :
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+**Un moment d'ordre $p\ (p\in \mathbb{N})$** de la v.a.r. $X$ est un nombre réel $\mathbb{E}(|X|^p)$, quand il existe.
+
+**Un moment centré d'ordre $p\ (p\in \mathbb{N})$** de la v.a.r. $X$ est un nombre réel $\mathbb{E}(|X - \mathbb{E}X|^p)$, quand il existe.
+
+::::
+</div>
+
+## Exemple de calcul
+
+Soit $X$ une v.a. définie par les valeurs ci-dessous. Calculez sa variance et son écart-type.
+
+<center>
+
+\centering
+
+![](img/example-variance-init.png){width=75%}
+
+</center>
+
+\raggedright
+
+Il s'agit d'une v.a. discrète. Vérifions que $\sum_{i=1}^n p(x_i) = 1$ :
+
+$$\sum_{i=1}^n p(x_i) = 0.05 + 0.25 + 0.4 + 0.25 + 0.05 = 1$$
+
+La variance d'une v.a. discrète est donnée par : 
+
+$$Var(X) = \mathbb{E}[(X-\mathbb{E}X)^2]=\mathbb{E}[X^2]-(\mathbb{E}X)^2=\sum_i (x_i-\mathbb{E}X)^2 p_i$$
+
+et son écart-type est défini comme $\sigma(X) = \sqrt{Var(X)}$.
+
+Ainsi, on peut voir que afin de calculer la variance et l'écart-type, il faut d'abord calculer l'espérance de $X$, $\mathbb{E}X$, donnée par : 
+$$\mathbb{E}[X] = \sum_i x_ip_i = \sum_i x_iP(X=x)$$
+
+$$\mathbb{E}[X] = 1\times 0.05 + 2\times 0.25 + 3\times 0.4 + 4\times 0.25 + 5\times 0.05 = 0.05 + 0.5 + 1.2 + 1 + 0.25 = 3$$.
+
+Soustrayons l'espérance de $X$ à partir des valeurs de $X$ et rajoutons une nouvelle ligne dans la table :
+
+
+<center>
+
+\centering
+
+![](img/example-variance-1.png){width=75%}
+
+</center>
+
+\raggedright
+
+Nous pouvons néanmoins appliquer la formule de la variance en multipliant les probabilités de chaque valeurs par le nouveau terme qu'on vient de calculer et en prenant leur somme :
+
+<center>
+
+\centering
+
+![](img/example-variance-2.png){width=75%}
+
+</center>
+
+\raggedright
+
+$$Var(X) = \mathbf{4}\times 0.05 + \mathbf{1}\times 0.25 + \mathbf{0}\times 0.4 + \mathbf{1}\times 0.25 + \mathbf{4}\times 0.05 = 0.2 + 0.25 + 0 + 0.25 + 0.2 = \mathbf{0.9}$$
+
+Une fois la variance est calculée, il est possible de calculer l'écart-type :
+
+$$\sigma(X) = \sqrt{Var(X)} = \mathbf{\sqrt{0.9}}$$
+
+# Quelques exemples de lois de probabilité
+
+Citons quelques examples de lois de probabilité.
+
+## Distribution normale 
+
+**La loi normale** aussi appelée **la loi de Gauss** (en. *Normal distribution*) est une loi de probabilité très étudiée et très utilisée. 
+
+La notation suivante est utilisée : $X\sim \mathcal{N}(m, \sigma^2)$ ou $X\sim \mathcal{N}(\mu, \sigma^2)$ pour exprimer que la v.a.r. $X$ sur l'espace probabilisé $(\Omega, \mathcal{A}, \mathbb{P})$ suit la loi normale avec les paramètres $(m, \sigma^2)$ (ou $(\mu, \sigma^2)$). Le paramètre $m$ ($\mu$) est l'espérance de la distribution et le paramètre $\sigma^2$ et la variance ($\sigma$ est l'écart-type).
+
+La loi normale est définie par *la fonction de densité* suivante :
+
+$$f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-1/2\left(\frac{x-m}{\sigma}\right)^2}$$
+
+*La fonction de répartition de la loi normale* est donc donnée par :
+$$F(x) = \frac{1}{\sigma\sqrt{2\pi}}\int_{-\infty}^x e^{-1/2\left(\frac{t-m}{\sigma}\right)^2}dt$$
+
+La courbe de la fonction de densité a la forme dite de "cloche" et elle est symétrique par rapport à $m$ :
+
+<center>
+
+\centering
+
+![](img/normal-dist-mean(1).png)
+
+</center>
+
+\raggedright
+
+Soit $X\sim \mathcal{N}(\mu, \sigma^2)$. On peut remarquer les régularités suivantes :
+
+* $\mathbb{P}(\mu - \sigma\leq X \leq \mu + \sigma) \approx 0.682$
+* $\mathbb{P}(\mu - 2\sigma\leq X \leq \mu + 2\sigma) \approx 0.954$
+* $\mathbb{P}(\mu - 3\sigma\leq X \leq \mu + 3\sigma) \approx 0.997$
+
+ou sur le graphique :
+
+<center>
+
+\centering
+
+![](img/normal-percent-all.png){width=50%}
+
+</center>
+
+\raggedright
+
+Observons maintenant deux courbes :
+
+<center>
+
+\centering
+
+![](img/normal-diff-sigma-diff-mean.png)
+
+
+</center>
+
+\raggedright
+
+Selon la forme et la position des centres, on peut déduire que : $\mu' > \mu$ (le centre est situé plus à droite) et $\sigma' > \sigma$ (la courbe est plus étalée).
+
+### Loi normale centrée réduite
+
+Un cas spécial de la loi normale est **la loi normale centrée réduite** (en. *standard normal distribution*). Il s'agit de la loi normale avec les paramètres $(0,1)$, i.e. : $X\sim \mathcal{N}(0, 1)$, autrement dit $m=0$, $\sigma=1$.
+
+Sa *fonction de densité* est :
+
+$$\varphi = \frac{1}{\sqrt{2\pi}}e^{-x^2/2}$$ 
+
+Visualisons-la :
+
+<center>
+
+\centering
+
+![](img/standard-normal-1.png){width=50%}
+
+</center>
+
+\raggedright
+
+Sa *fonction de répartition* est donnée par :
+
+$$\Phi = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^x e^{-t^2/2}dt$$
+
+En la visualisant :
+
+<center>
+\centering
+
+![](img/standard-normal-cdf.png)
+
+</center>
+
+\raggedright
+
+
+Dans le `R`:
+
+```{r}
+# création d'une séquence de valeurs dans la plage [-5,5] avec le pas 0.01
+x <- seq(-5, 5, 0.01) 
+# les valeurs de la fonction de densité de la loi normale centrée réduite 
+# pour les x
+y <- dnorm(x, mean=0, sd=1)
+# visualisation de (x, y)
+plot(x, y, main="La loi normale centrée réduite", ylab="f(x)")
+```
+
+
+
+### Z-table
+
+Une des particularités de la loi normale est que les valeurs numériques prises par sa fonction de répartition sont tabulées.
+
+> Comment trouver la valeur de $\Phi(x)$ ?
+
+Comme il est indiqué plus haut, les valeurs de la loi normale centrée réduite $\Phi(x) = \mathbb{P}(X\leq x)$ sont connues et on peut les trouver dans les tables.
+
+<center>
+\centering
+
+![](img/normal-0.png){width=75%}
+
+</center>
+
+\raggedright
+
+Observons la table de la loi normale centrée réduite.
+
+`r getZtable()`
+
+Supposons qu'on s'intéresse à $\Phi(1.53)$. 
+
+
+<center>
+
+\centering
+
+`r gifImgCollection("img/z-table-example-2")`
+
+
+</center>
+
+\raggedright
+
+Ainsi, on retrouve la valeur $\Phi(1.53) = 0.93699$.
+
+Pour trouver la valeur de la fonction de répartition de la loi normale centrée réduite, on peut également utiliser la fonction `pnorm(x, mean=0, sd=1)` de `R`. Reprenons le même exemple de $\Phi(1.53)$ :
+
+```{r}
+# x=1.53
+pnorm(1.53, mean=0, sd=1)
+```
+
+On obtient le même résultat.
+
+**Et si on s'intéresse à une valeur négative ?**
+
+Dans ce cas là, grâce à la symétrie de la loi normale, on peut utiliser la propriété suivante : pour $x < 0$, $\Phi(x) = 1 - \Phi(|x|)$. 
+
+Regardons sur l'exemple de $x = -2$.
+
+<center>
+
+\centering
+
+![](img/normal-for-2.png){width=50%}
+
+
+</center>
+
+\raggedright
+
+
+Comme on peut voir à partir de la table, $\Phi(2) = 0.99725$. Donc, $\Phi(-2) = 1 - 0.99725 = 0.00275$.
+
+Dans le `R` :
+
+```{r}
+# x=-2
+pnorm(-2, mean=0, sd=1)
+# x=2
+pnorm(2, mean=0, sd=1)
+# 1-F(2)
+1-pnorm(2, mean=0, sd=1)
+# vérifions que F(-2) == 1-F(2) en arrondissant pour éviter les différences 
+# dans la précision de valeurs
+round(pnorm(-2, mean=0, sd=1), 8) == round(1-pnorm(2, mean=0, sd=1), 8)
+```
+
+
+### Normalisation (standartisation)
+
+> Comment trouver la valeur de $\mathbb{P}(X \leq x), \ X\sim \mathcal{N}(m, \sigma^2)$ si ce sont des valeurs de la loi normale centrée réduite qui sont tabulée ? 
+
+Soit $X\sim \mathcal{N}(m, \sigma^2)$. Introduisons la v.a.r. $Z$ telle que :
+
+$$Z = \frac{X-m}{\sigma}$$
+
+Cette nouvelle v.a.r. suit la loi normale centrée réduite, i.e. $Z\sim \mathcal{N}(0,1)$.
+
+Le processus de création de $Z$ est appelé **standartisation** ou **normalisation** (en. *normalisation* ou *standartisation*). 
+
+Notons une propriété importante :
+
+$$\mathbb{P}(X \leq x) = \mathbb{P}\left(\frac{X-m}{\sigma}\leq\frac{x-m}{\sigma}\right) = \mathbb{P}\left(Z\leq \frac{x-m}{\sigma}\right)$$
+Alors, en se servant de la table des valeurs pour la loi normale centrér réduite, on peut trouver $\mathbb{P}(X \leq x)$.
+
+## Autres lois de probabilité
+
+Présentons ici quelques lois de probabilité avec leurs caractéristiques principales.
+
+### Variables discrètes
+
+||Plage ds valeurs|Fonction de masse|Visualisation|Espérance|Variance|Interprétation|
+|---------|:--:|:--------------------:|:-------:|:-----:|:-----:|----------------|
+|**Uniforme discrète**, $\mathcal{U}(N)$| $\{1,...,N\}$| $$\mathbb{P}(X=k) = \frac{1}{N}$$|![](img/dist-discrete-uniform.png)|$\frac{N+1}{2}$|$\frac{N^2-1}{12}$| $N$ issues équiprobables|
+|**Bernoulli**, $\mathcal{B}(p)$| $\{0,1\}$ | $$\mathbb{P}(X=k) = \left\{\begin{array}{ll}1-p, \mbox{ si } k=0 \\ p, \mbox{ si } k=1 \\ 0, \mbox{ sinon}\end{array}\right.$$||$p$|$p(1-p)$|2 issues possibles dont une avec la probabilité $p$|
+|**Binomiale**, $\mathcal{B}(n,p)$| $\{0,...,n\}$ | $$\mathbb{P}(X=k) = C^k_n p^k(1-p)^{n-k}$$|![](img/dist-discrete-binomial.png)|$np$|$np(1-p)$|Somme de $n$ Bernoullis indépendants : \# succès dans $n$ tirages si chaque tirage a une probabilité $p$ d'être gagnant (e.g. \# tickets gagnant parmi $n$)|
+|**Géométrique**, $\mathcal{G}(p)$| $\{0,...,\infty\}$| $$\mathbb{P}(X=k) = p(1-p)^{k-1}$$ |![](img/dist-discrete-geometric.png)| $\frac{1}{p}$ | $\frac{1-p}{p^2}$|\# tirages avant le 1er succès dans une séquence de Bernoullis indépendants (e.g. \# piles avant la 1ère face)|
+|**Poisson**, $\mathcal{P}(\lambda)$|$\{0,...,\infty\}$| $$\mathbb{P}(X=k) = e^{-\lambda\frac{\lambda^k}{k!}}$$ | ![](img/dist-discrete-poisson.png) | $\lambda$ | $\lambda$ | Evènements rares : une réalisation sur un grand nombre d'expériences|
+
+
+### Variables continues
+
+||Plage ds valeurs|Densité|Visualisation|Espérance|Variance|Interprétation|
+|---------|:--:|:--------------------:|:-------:|:-----:|:-----:|----------------|
+|**Uniforme**, $\mathcal{U}([a,b])$| $[a,b]$| $$f(x) = \frac{1}{b-a}\mathbb{I}_{[a,b]}(x)$$ $\mathbb{I}_{A}(x) = \left\{\begin{array}{ll} 1, \mbox{ si } x\in A \\ 0, \mbox{ sinon} \end{array} \right.$ |![](img/dist-cont-uniform.png) | $\frac{a+b}{2}$ | $\frac{(b-a)^2}{12}$ | Toutes les valeurs ont la même chance d’apparaître (permutation aléatoire uniforme) |
+| **Normale, Gausienne, Laplace-Gauss**, $\mathcal{N}(m,\sigma^2)$ | $\mathbb{R}$ | $$f(x) =  \frac{1}{\sigma\sqrt{2\pi}} e^{-1/2\left(\frac{x-m}{\sigma}\right)^2}$$| ![](img/dist-cont-normal.png)| $m$ | $\sigma^2$ | Loi des moyennes |
+| **Exponentielle**, $\mathcal{E}(\lambda)$ | $\mathbb{R}^{+}$ | $$f(x) = \lambda e^{-\lambda x}\mathbb{I}_{\mathbb{R}^{+}}(x)$$ | ![](img/dist-cont-exp.png) | $\frac{1}{\lambda}$ | $\frac{1}{\lambda^2}$ | Loi des durés de vie / réalisations de tâches |
+
+
+# Fonction caractéristique et fonction génératrice
+
+> Soit $X$ v.a.r. de la loi connue, soit $h : \mathbb{R} \rightarrow \mathbb{R}$ fonction continue par morceaux. Quelle est la loi de la v.a.r. $X$ ?
+
+Afin de pouvoir répondre à ce genre de problèmes, d'autres caractérisations de la loi d'une v.a.r. à part la fonction de masse / densité peuvent être utiles. 
+
+Ici, nous présenterons brièvemet la fonction caractéristique et la fonction génératrice. Pour plus de détails, voir @balac.
+
+## Fonction caractéristique
+
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+On appelle **la fonction caractéristique** de la v.a.r. $X$ la fonction de $\mathbb{R}$ dans $\mathbb{C}$ définie par $$\phi_X(t) = \mathbb{E}(e^{itX}), \ \forall t\in \mathbb{R}$$ 
+
+*Quelques propriétés* : 
+
+* Si $\phi_X(t)$ est deux fois dérivable en 0, alors $\mathbb{E}(X)$ et $\mathbb{E}(X^2)$ existent et :
+
+$$\mathbb{E}(X) = -i\phi'_X(0)$$
+$$\mathbb{E}(X^2) = -\phi''_X(0)$$
+
+* Soit $a$ et $b$ deux réels et $Y$ la v.a.r. définie par $Y = aX + b$. La fonction caractéristique  $\phi_Y(t)$
+de la v.a.r. $Y$ vérifie :
+
+$$\phi_Y(t) = e^{itb}\phi_X(at), \ \forall t\in \mathbb{R}$$
+
+::::
+</div>
+
+## Fonction génératrice
+<div class="alert alert-success">
+:::: {.lightgreenbox data-latex=""}
+
+Soit $X$ v.a.r. discrète à valeurs entières. On appelle **fonction génératrice de $X$** la fonction définie pour tout $s\in [-1,1]$ par 
+$$G_X(s) = \mathbb{E}(s^X) = \sum_{j\in \mathbb{N}}s^j \times \mathbb{P}(X=j)$$
+
+
+*Quelques propriétés *:
+
+* $G_X(1) = 1$, $G_X(0) = \mathbb{P}(X=0)$
+* $G'_X(1) = \mathbb{E}(X)$, $G''_X(1) = \mathbb{E}(X(X-1))$ et plus généralement : $\forall k\in \mathbb{N}^*,$
+
+$$G^{(k)}_X(1) = \mathbb{E}(X\times (X-1)\times ...\times (X-k+1))$$
+
+::::
+</div>
+
+# Liens utiles 
+
+1. Jeremy Orloff, and Jonathan Bloom. *18.05 Introduction to Probability and Statistics*. Spring 2014. Massachusetts Institute of Technology: MIT OpenCourseWare, [https://ocw.mit.edu](https://ocw.mit.edu). License: Creative Commons BY-NC-SA.
+2. [Combinaisons avec répétition](https://www.youtube.com/watch?v=1crNnZkIvac) 
+3. [Z-table](https://www.ztable.net/)
+
+# References
+

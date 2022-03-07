@@ -1,0 +1,26 @@
+{
+    "id": "99DE1E90",
+    "path": "~/Probas/TP/codes/TP-Probas/seance1.R",
+    "project_path": "seance1.R",
+    "type": "r_source",
+    "hash": "918567310",
+    "contents": "",
+    "dirty": false,
+    "created": 1646581013342.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "36,5",
+        "scrollLine": "13"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1646593639,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1646593639043,
+    "read_only": false,
+    "read_only_alternatives": []
+}

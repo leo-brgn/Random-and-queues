@@ -1,0 +1,351 @@
+---
+title: "TP de Probabilités"
+author: "Irène Gannaz"
+date: "2017-2018"
+output: pdf_document
+---
+
+
+
+
+# Partie 1. Tests de qualité de générateurs aléatoires
+
+## Question 1. Générateurs à congruence linéaire
+
+Deux générateurs à congruence linéaire sont construits, RANDU et Standard Minimal.
+
+\textcolor{blue}{J'ai mis un code retournant une matrice mais la majorité des étudiants font des fonctions retournant un vecteur, ce qui convient parfaitement.}
+
+## Question 2. Tests visuels
+
+```{r setup, include=FALSE}
+library(randtoolbox)
+library(microbenchmark)
+source('generateurs.R')
+source('tests.R')
+source('AutresLois.R')
+source('filesMM1.R')
+
+graine <- sample.int(10000,1) # fixer pour avoir un code reproductible
+Nsimu <- 1000
+Nrepet <- 20
+```
+
+Dans un premier temps, on représente les histogrammes de 1000 valeurs générés pas nos générateurs aléatoires. L'objectif est de vérifier le caractère uniforme des valeurs générées.
+
+```{r, echo=FALSE}
+randu <- RANDU(Nsimu,Nrepet,graine)
+standard <- StandardMinimal(Nsimu,Nrepet,graine)
+mersenne <- MersenneTwister(Nsimu,Nrepet,graine)
+neumann <- VonNeumann(Nsimu,Nrepet,graine)
+
+max_randu <- 2^31
+max_standard <- 2^31-1
+max_mersenne <- 2^32-1
+max_vn <- 9999
+
+par(mfrow=c(2,2))
+hist(randu[,1],seq(0,max_randu,length=20),main='Randu')
+hist(standard[,1],seq(0,max_standard,length=20),main='Standard Minimal')
+hist(mersenne[,1],seq(0,max_mersenne,length=20),main='Mersenne Twister')
+hist(neumann[,1],seq(0,max_vn,length=20),main='VonNeumann')
+```
+
+\textcolor{blue}{J'ai imposé le découpage en bins ici. Par défaut la fonction `hist` prend les bins optimaux pour la représentation de lois gaussiennes. Une conséquence est qu'on étend l'histogramme un peu au-delà du max, donc tous les étudiants se retrouvent avec le dernier rectangle inférieur aux autres. Dites-leur que c'est un problème lié à la fonction `hist` mais pas la peine qu'ils cherchent à le corriger.}
+
+\textcolor{blue}{Erreur classique des étudiants : mettre trop de bins ! Ce ne sont alors plus des histogrammes et on n'a pas de vision *globale* de la distribution.}
+
+
+Les générateurs doivent simuler des réalisations de loi uniforme, qui a une densité constante. On s'attend donc à avoir des hauteurs identiques entre les bins d'un histogramme. On constate qu'on s'en approche en effet pour les générateurs RANDU, Standard Minimal et Mersenne-Twister, avec des fluctuations dues à l'aléatoires qui semblent raisonnables. Par contre l'algorithme de Von Neumann semble très éloigné d'une loi uniforme. 
+
+On constate que la majorité des valeurs de Von Neumann sont nulles. Le nombre 0 est un état absorbant de l'algorithme : si on génère 0, tout le reste de la séquence sera également nul. Cet algorithme n'est donc pas de bonne qualité.
+
+\textcolor{blue}{J'ai laissé Von Neumann, après hésitation, pour des raisons historiques... qu'ils aient au moins une fois entendu le nom de ce pionnier de l'informatique.\textcolor{blue}{
+
+Dans un second temps, on reeprésente chaque valeur générée en fonction de celle qui la précède. L'idée est de voir si les séquences générées sont proches de réalisations indépendantes.
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(randu[1:(Nsimu-1),1],randu[2:(Nsimu),1],main='Randu')
+plot(standard[1:(Nsimu-1),1],standard[2:(Nsimu),1],main='Standard Minimal')
+plot(mersenne[1:(Nsimu-1),1],mersenne[2:(Nsimu),1],main='Mersenne Twister')
+plot(neumann[1:(Nsimu-1),1],neumann[2:(Nsimu),1],main='VonNeumann')
+```
+
+On constate qu'aucune structure n'est visble dans les nuages de points obtenus pour RANDU, Standard Minimal et Mersenne Twister. Le fait de connaître une valeur générée ne permet pas de trouver facilement la suivante si on ne connaît pas l'algorithme utilisé. En particulier les générateurs à congruence linéaire sont des suites récurrentes faciles à mettre en \oe uvre, mais la présence du modulo permet de donner une illusion d'indépendance. Par contre ce n'est pas le cas pour Von Neumann, où des dépendances linéaires apparaissent entre les valeurs.
+
+\newpage
+
+\textcolor{blue}{Parenthèse pour RANDU, non demandé dans le TP !}
+
+```{r,echo=FALSE}
+data.randu <- data.frame(x=randu[1:(Nsimu-2),1],y=randu[2:(Nsimu-1),1],z=randu[3:(Nsimu),1])
+library(lattice)
+ p <- cloud(z ~ x + y, data=data.randu) # wireframe pour surface
+ npanel <- c(4, 2)
+ rotx <- c(-50, -80)
+ rotz <- seq(300, 500, length = npanel[1]+1)
+ update(p[rep(1, prod(npanel))], layout = npanel, panel = function(..., screen) {
+                       panel.cloud(..., screen = list(z = rotz[current.column()],x = rotx[current.row()]))
+                   })
+```
+
+\textcolor{blue}{Une visualsiation non pas de 2 valeurs consécutives mais de 3 valeurs consécutives montrent que l'indépendance des réalisations avec RANDU est remise en cause.}
+
+\newpage
+
+
+## Question 3. Test Frequency
+
+Mersenne-Twister est en 32 bits et Standard Minmal en 31 bits. RANDU prenant ses valeurs sur $\{0,\dots,2^{31}\}$, il est en 32 bits mais la probabilité que le trente-deuxième bit soit non nul est de $1/(2^{31}+1)$, donc on ne va considérer que 31 bits. Von Neumann prenant ses valeurs sur $\{0, \dots, 9999\}$, nous considérerons 14 bits.
+
+Ensuite, la fonction `binary` fournie utilise la convention Big-Indian. 
+
+Le test Frequency regarde si les bits sont bien modifiés uniformément, donc si la probabilité qu'un bit vaille 0 vaut 1/2 et que la probabilité qu'il vaille 1 soit 1/2. Avec la règle du 1% sur le calcul des p-valeurs, sur 100 réalisations, nous obtenons les proportions de rejet suivantes :
+
+```{r, echo=FALSE}
+freq_neumann <- rep(0,Nrepet)
+freq_randu <- rep(0,Nrepet)
+freq_standard <- rep(0,Nrepet)
+freq_mersenne <- rep(0,Nrepet)
+for(nrep in 1:Nrepet){
+  freq_neumann[nrep] <- Frequency(VonNeumann(Nsimu,1,sample.int(10000,1)),14) # Je change la graine à chaque appel à Von Neumman car si on tombe dans un état absorbant, on y restera indéfiniment
+  freq_randu[nrep] <- Frequency(randu[,nrep],31)
+  freq_standard[nrep] <- Frequency(standard[,nrep],31)
+  freq_mersenne[nrep] <- Frequency(mersenne[,nrep],32)
+}
+
+cat('\n Test Frequency - Proportion de rejets\n')
+cat('\t RANDU            : ', mean((freq_randu<0.01)),'\n')
+cat('\t Standard Minimal : ', mean((freq_standard<0.01)),'\n')
+cat('\t Mersenne Twister : ', mean((freq_mersenne<0.01)),'\n')
+cat('\t Von Neumann      : ', mean((freq_neumann<0.01)),'\n')
+```
+
+On constate que Mersenne-Twister ainsi que Standard Minimal ont une proportion très faible de rejets. Ils valident donc ce test. A l'inverse, RANDU et Von Neumann ont une proportion élevée de rejets et on peut donc considérer que ce ne sont pas de bons générateurs aléatoires.
+
+\textcolor{blue}{Beaucoup ont tendance à regarder les moyennes ou des histogrammes des p-valeurs. Ce n'est clairement pas le bon outil ici, car ce qui nous intéresse est le nombre de rejets... Sauf pour les histogrammes s'il y a l'interprétation de la distribution obtenue, mais qui dépasse largement ce qu'ils connaissent actuellement des statistiques. Sous l'hypothèse (H0) "le générateur aléatoire retournent des réalisations indépendantes et uniformes", la loi des p-valeurs est une loi uniforme sur [0, 1]. Donc plus on s'éloigne de la loi uniforme, plus on peut remettre en question la qualité du générateur.}
+
+```{r, echp=FALSE}
+par(mfrow=c(2,2))
+hist(freq_randu,10,xlim=c(0,1),main='RANDU',breaks=seq(0,1,0.01))
+hist(freq_standard,10,xlim=c(0,1),main='Standard Minimal')
+hist(freq_mersenne,10,xlim=c(0,1),main='Mersenne Twister')
+hist(freq_neumann,10,xlim=c(0,1),main='Von Neumann',breaks=seq(0,1,0.01))
+```
+
+\textcolor{blue}{Pour tester le code, reprendre l'exemple du sujet. `Frequency(715,10)` doit retrouner 0.5271.}
+
+
+\textcolor{blue}{Si on ne précise pas `xlim=c(0,1)` dans l'histogramme de Von Neumann ou de RANDU, on se retrouve avec des graphiques illisibles.}
+
+## Question 3. Test des runs
+
+Le test des runs regarde si les bits sont bien modifiés indépendamment, donc si la probabilité qu'un bit vaille 0 ou 1 ne dépend pas des bits de la séquence. Avec la règle du 1% sur le calcul des p-valeurs, sur 100 réalisations, nous obtenons les proportions de rejet suivantes :
+
+```{r, echo=FALSE}
+runs_neumann <- rep(0,Nrepet)
+runs_randu <- rep(0,Nrepet)
+runs_standard <- rep(0,Nrepet)
+runs_mersenne <- rep(0,Nrepet)
+for(nrep in 1:Nrepet){
+  runs_randu[nrep] <- Runs(randu[,nrep],31)
+  runs_standard[nrep] <- Runs(standard[,nrep],31)
+  runs_mersenne[nrep] <- Runs(mersenne[,nrep],32)
+  runs_neumann[nrep] <- Runs(VonNeumann(Nsimu,1,sample.int(10000,1)),14)
+}
+
+cat('\n Test Frequency - Proportion de rejets\n')
+cat('\t RANDU            : ', mean((runs_randu<0.01)),'\n')
+cat('\t Standard Minimal : ', mean((runs_standard<0.01)),'\n')
+cat('\t Mersenne Twister : ', mean((runs_mersenne<0.01)),'\n')
+cat('\t Von Neumann      : ', mean((runs_neumann<0.01)),'\n')
+```
+
+On constate que Mersenne-Twister ainsi que Standard Minimal ont une proportion très faible de rejets. Ils valident donc ce test. A l'inverse, RANDU et Von Neumann ont une proportion élevée de rejets et on peut donc considérer à nouveau que ce ne sont pas de bons générateurs aléatoires.
+
+\textcolor{blue}{Pour vérifier le code, on peut reprendre l'exemple du sujet : Runs(619,10) et Runs(c(11,19),5) doivent tous deux retourner 0.1472. Si c'est le cas pour le permier et pas pour le second, c'est que la comparaison entre le dernier bit d'un mot et le premier bit du mot suivant a été oubliée.}
+
+## Question 4. Test d'ordre
+
+Le test d'ordre a un objectif similaire au test des runs. Avec la règle du 1% sur le calcul des p-valeurs, sur 100 réalisations, nous obtenons les proportions de rejet suivantes :
+
+```{r, echo=FALSE}
+ordre_neumann <- rep(0,Nrepet)
+ordre_randu <- rep(0,Nrepet)
+ordre_standard <- rep(0,Nrepet)
+ordre_mersenne <- rep(0,Nrepet)
+for(nrep in 1:Nrepet){
+  ordre_randu[nrep] <- order.test(randu[,nrep],d=4,echo=FALSE)$p.value
+  ordre_standard[nrep] <- order.test(standard[,nrep],d=4,echo=FALSE)$p.value
+  ordre_mersenne[nrep] <- order.test(mersenne[,nrep],d=4,echo=FALSE)$p.value
+  ordre_neumann[nrep] <- order.test(neumann[,nrep],d=4,echo=FALSE)$p.value
+}
+
+cat('\n Test d ordre - Proportion de rejets\n')
+cat('\t RANDU            : ', sum(ordre_randu<0.01)/Nrepet,'\n')
+cat('\t Standard Minimal : ', sum(ordre_standard<0.01)/Nrepet,'\n')
+cat('\t Mersenne Twister : ', sum(ordre_mersenne<0.01)/Nrepet,'\n')
+cat('\t Von Neumann      : ', sum(ordre_neumann<0.01)/Nrepet,'\n')
+
+```
+
+Seul Von Neumann a une proportion élevée de rejets. Au vu de ce test, aucun des autres générateurs ne peut donc être considéré comme de mauvaise qualité.
+
+\textcolor{blue}{Attention : il faut avoir des vecteurs et non des matrices pour pouvoir appliquer ce test ! On peut utiliser `as.vector()`.}
+
+
+# Partie 2 - Simulations de lois de probabilités quelconques - Bonus
+
+## Question Bonus 1. Loi binomiale
+
+```{r, echo=FALSE}
+n <- 40
+p <- 0.28
+
+bino <- LoiBinomiale(Nsimu,n,p)
+par(mfrow=c(1,2))
+plot(table(bino),cex=5,main=paste('Binomiale(',n,',',p,')'),xlab='',ylab='')
+abs <- seq(min(bino),max(bino),0.01)
+lines(abs,dnorm(abs,n*p,sqrt(n*p*(1-p)))*Nsimu,col='red')
+legend("topright",legend='densité de la loi gaussienne')
+
+n <- 50
+p <- 0.91
+
+bino <- LoiBinomiale(Nsimu,n,p)
+plot(table(bino),cex=5,main=paste('Binomiale(',n,',',p,')'),xlab='',ylab='')
+abs <- seq(min(bino),max(bino),0.01)
+lines(abs,dnorm(abs,n*p,sqrt(n*p*(1-p)))*Nsimu,col='red')
+legend("topright",legend='densité de la loi gaussienne')
+
+```
+
+On constate que la loi binomiale est en effet très proche de la loi normale avec les valeurs des paramètres considérées ici.
+
+## Question Bonus 2. Simulation par rejet
+
+Nous comparons deux méthodes permettant de générer des réalisations de la loi de densité $f(x) = \frac{2\,\log(1+x)}{log(2)^2\,(1+x)}$, la méthode par inversion et la méthode par rejet. Dans un premier temps, nous vérifions que les algorithmes retournent bien des réalissations correspondant à cette loi en représentant les histogrammes.
+
+```{r, echo=FALSE}
+dens <- function(x){2/log(2)^2*log(1+x)/(1+x)}
+xinv <- Inversion(Nsimu)
+xrejet <- Rejet(Nsimu)
+
+par(mfrow=c(1,2))
+nbins <- 20
+hist(xinv,nbins,main='Inversion')
+t <- seq(0,1,0.1)
+lines(t,Nsimu/nbins*dens(t),col='red')
+hist(xrejet,nbins,main='Rejet')
+lines(t,Nsimu/nbins*dens(t),col='red')
+```
+
+Les courbes rouges représentent la densité (avec un facteur multiplicatif). On constate que les deux algorithmes retournent des valeurs cohérentes. Comparons maintenant les temps d'exécutions.
+
+
+```{r, echo=FALSE}
+res <- microbenchmark(times=100,Inversion(Nsimu),Rejet(Nsimu))
+cat('\n Comparaison des methodes par Inversion et Rejet\n')
+print(res)
+cat('\n\n')
+```
+
+Nous observons que la méthode par inversion est significativement plus rapide que la méthode par rejet.
+
+
+# Partie 3 - Application aux files d’attentes
+
+
+## Question 6. Simulation de files d'attentes
+
+Nous utilisons la génération d'aléatoire pour simuler une file d'attente.
+
+\textcolor{blue}{Attention à ce que toutes les valeurs soient inférieures à D. Et ne pas faire partir tout le monde à la fin !}
+
+## Question 7. Visualisation de files d'attente
+
+Nous visualisons le nombre de personnes dans la file d'attente en fonction du temps pour différentes valeurs de paramètres. Je représente sur 12 puis sur 120 heures pour mieux visualiser les phénomènes.
+
+```{r, echo=FALSE}
+set.seed(NULL)
+
+lambda_vect <- c(8,14,15,20)
+mu <- 15
+D <- 12
+
+par(mfrow=c(2,2))
+for(lambda in lambda_vect){
+  file <- fileMM1(lambda,mu,D)
+  evol <- Evolution(file)
+  plot(evol$temps,evol$nombre,type='s',main=paste('Evolution avec ',expression(lambda),' = ',lambda,' et ', expression(mu), ' = ',mu),xlab='Temps',ylab='Nombre')
+}
+
+
+D <- 120
+
+par(mfrow=c(2,2))
+for(lambda in lambda_vect){
+  file <- fileMM1(lambda,mu,D)
+  evol <- Evolution(file)
+  plot(evol$temps,evol$nombre,type='s',main=paste('Evolution avec ',expression(lambda),' = ',lambda,' et ', expression(mu), ' = ',mu),xlab='Temps',ylab='Nombre')
+}
+```
+
+Pour $\lambda=8$ et $\mu=15$, la chaîne converge en probabilité. On constate qu'il y a des variations du nombre de personnes dans la file, mais celles-ci sont raisonnables et "contrôlées". On peut déterminer avec quelle probabilité on va avoir un certains nombre de personnes.
+
+Pour $\lambda=14$ et $\mu=15$, le phénomène est moins net. On observe des fluctuations plus importantes. La théorie nous dit que la chaîne converge. Ceci se voit sur un grand intervalle de temps ($\simeq$ 100h) mais moins sur un intervalle de 12h.
+
+Pour $\lambda=15$ et $\mu=15$, le comportement de la chaîne est difficile à décrire. On a l'impression qu'alternent des périodes de stabilité (régime convergent) et de divergence (forte augmentation des valeurs). Nous sommes dans un contexte où la chaîne ne converge pas et ne diverge pas. Son comportement ne peut être résumé simplement du point de vue mathématique.
+
+Pour $\lambda=20$ et $\mu=15$, la chaîne diverge : le temps de traitement est trop long et le système ne peut triater les requêtes dans un déai suffisant avant l'arrivée d'autres clients. La file s'allonge donc et le nombre de personnes tend vers l'infini.
+
+
+\textcolor{blue}{Pour représenter la file, il y a deux options. La première consiste à prendre un pas de temps et on regarde sur une grille équidistante combien de personnes il y a dans la file aux instants choisis. Cette méthode n'est pas optimale. Elle entraine une perte d'information et il faut calibrer le pas de temps en fonction des paramètres utilisés. La meilleure option est la seconde, qui consiste à récupérer les instants où il se passe un événement (arrivée ou départ).}
+
+\textcolor{blue}{Une erreur classique est d'oublier de parcourir les deux tableaux, arrivees et departs, intégralement et de s'arrêter dès qu'on a fini de parcourir l'un des 2 tableaux.}
+
+# Question 8. Formule de Little
+
+
+```{r, echo=FALSE}
+D <- 12
+cat('===================================\n == Observation sur 12h == \n')
+for(lambda in lambda_vect[1:2]){
+  file <- fileMM1(lambda,mu,D)
+  evol <- Evolution(file)
+  
+  alpha <- lambda/mu
+  moyW <- TempsMoyen(file)
+  moyN <- NombreMoyen(evol)
+
+cat('\n Nombre moyen estimé    :',moyN,'\n')
+cat(' Nombre moyen theorique :', alpha/(1-alpha),'\n')
+
+cat('\n Lambda estime, E(N)/E(W) estimé  :',moyN/moyW,'\n')
+cat(' Vrai lambda                      :',lambda,'\n\n --------------------------------------------\n\n')
+}
+
+D <- 120
+cat('===================================\n == Observation sur 120h == \n')
+for(lambda in lambda_vect[1:2]){
+  file <- fileMM1(lambda,mu,D)
+  evol <- Evolution(file)
+  
+  alpha <- lambda/mu
+  moyW <- TempsMoyen(file)
+  moyN <- NombreMoyen(evol)
+
+cat('\n Nombre moyen estimé    :',moyN,'\n')
+cat(' Nombre moyen theorique :', alpha/(1-alpha),'\n')
+
+cat('\n Lambda estime, E(N)/E(W) estimé  :',moyN/moyW,'\n')
+cat(' Vrai lambda                      :',lambda,'\n\n --------------------------------------------\n')
+}
+```
+
+\textcolor{blue}{Une erreur clasique est de prendre la moyenne du nombre de personnes sans prendre en compte la dimension temporelle. Il faut pondérer par la durée pendant laquelle on a ce nombre de personnes.}
+
+Sur 12h de fonctionnement on a une forte variabilité de l'estimation de $E(N)$, qui fait que le nombre moyen de personnes estimé est souvent éloigné de la valeur théorique. Mais le ratio $E(N)/E(W)$ est tout de même proche du paramètre $\lambda$. Sur 120h de fonctionnement, on retrouve bien des estimations proches des valeurs théoriques. La formule de Little entre autre est bien vérifiée. 
+
+\textcolor{blue}{Je ne mets que les cas convergents\dots}

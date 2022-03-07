@@ -1,0 +1,30 @@
+# installation du package here
+install.packages("here")
+# installation du package randtoolbox
+install.packages("randtoolbox")
+# chargement des packages
+library(here)
+library(randtoolbox)
+
+# en passant par la création du projet, le positionnement va etre dans le projet
+here()
+
+# chargement des modules R
+source("codes/generateurs.R")
+
+# test de la fonction
+RNGkind()
+# definir une graine
+s0 <- 215 # variable seed
+set.seed(s0, kind="Mersenne-Twister")
+
+# test de la fonction VonNeumann(n,p,graine)
+n <- 10
+p1 <- 5
+VonNeumann(n, graine = s0, p = p1)
+
+# 
+runif(n,p)
+
+# test de la fonction MersenneTwister(n,p,graine)
+MersenneTwister(n, p, s0)

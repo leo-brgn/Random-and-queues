@@ -1,0 +1,36 @@
+Frequency <- function(x,nb)
+{
+  S <- 0
+  for(i in 1:length(x)){
+    bitx <- rev(binary(x[i]))
+    S <- S+sum(2*bitx[1:nb]-1)
+  }
+  S <- abs(S)/sqrt(nb*length(x))
+  
+  return(2*(1-pnorm(S)))
+}
+
+Runs <- function(x,nb)
+{
+  n <- length(x)*nb
+  s <- sapply(x, function(xi){mean(rev(binary(xi))[1:nb])}) #sapply peut être remplacé par une boucle for
+  prop <- mean(s)
+  print(prop)
+  
+  if(abs(prop-0.5)>2/sqrt(n)){
+    pval <- 0
+  }else{
+    V <- 0
+    bit_end <- -1
+    for(xi in x){
+      bits <- rev(binary(xi))
+      V <- V+(bit_end!=bits[1])
+      V <- V+sum(bits[1:(nb-1)]!=bits[2:nb])
+      bit_end <- bits[nb]
+    }
+    print(V)
+    pval <- abs(V-2*n*prop*(1-prop))/(2*sqrt(n)*prop*(1-prop))
+    pval <- 2*(1-pnorm(pval))
+  }
+  return(pval)
+}
