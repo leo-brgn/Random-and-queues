@@ -83,6 +83,5 @@ p_vn <- mean(p_vn)
 p_ru <- mean(p_ru)
 p_stm <- mean(p_stm)
 
-p_test <- Runs(619,10)
 
 

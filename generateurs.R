@@ -104,7 +104,7 @@ Frequency <- function(x, nb)
   
   for (i in 1:length(x))
   {
-    bit_x <- binary(x[i])
+    bit_x <- rev(binary(x[i]))
     s <- 0
     for (j in 1:nb)
     {
@@ -136,8 +136,6 @@ Runs <- function(x, nb)
       p_vals[i] = 0
     } else {
       v <- sum(bit_x[1:nb]) + 1
-      print(v)
-      print(pnorm((abs(v - 2 * nb * Pi * (1-Pi)))/(2*sqrt(nb)*Pi*(1-Pi))))
       p_vals[i] <- 2 * (1-pnorm((abs(v - 2 * nb * Pi * (1-Pi)))/(2*sqrt(nb)*Pi*(1-Pi))))
       
     }
