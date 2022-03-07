@@ -60,9 +60,23 @@ randu <- function(n, p=1, graine)
   
   for(i in 2:(n*p+1))
   {
-    x[i] <- x[i-1] * 65539 %% 2^31
+    x[i] <- (x[i-1] * 65539) %% 2^31
   }
 
+  x <- matrix(x[2:(n*p+1)], nrow=n, ncol=p)
+}
+
+standardMinimal <- function(n, p=1, graine) 
+{
+  # vecteur de la longueur (n*p+1) construit en base de repetition de la valeur
+  # graine
+  x <- rep(graine, n*p+1)
+  
+  for(i in 2:(n*p+1))
+  {
+    x[i] <- (x[i-1] * 16807) %% (2^31 - 1)
+  }
+  
   x <- matrix(x[2:(n*p+1)], nrow=n, ncol=p)
 }
 

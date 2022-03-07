@@ -1,4 +1,11 @@
+---
+title: "Rapport"
+output: pdf_document
+date: '2022-03-07'
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 # installation du package randtoolbox s'il n'est pas installe
 if(!require(randtoolbox)) install.packages("randtoolbox")
 # chargement du package randtoolbox
@@ -12,22 +19,18 @@ sVN <- 3454 # graine pour la methode de Von Neumann
 sMT <- 1502 # graine pour la methode de Mersenne-Twister
 Nsimu <- 1000 # nombre de simulations (nombre d'entiers par sequences generee)
 Nrepet <- 20 # nombre de repetitions (nombre de sequences generees)
+```
 
+## Partie 1
 
-############################################################
-##  Section 2
-############################################################
+Question 2.1
+---
 
-# appel de la fonction VonNeumann du module generateurs.R 
-# et sauvegarde du resultat dans la variable vn
+```{r, echo=FALSE}
+# appel des fonctions de génréations de nombres aléatoires :
 vn <- VonNeumann(Nsimu, Nrepet, sVN) 
-
-# appel de la fonction MarsenneTwister du module generateurs.R 
-# et sauvegarde du resultat dans la variable mt
 mt <- MersenneTwister(Nsimu, Nrepet, sMT)
-
 ru <- randu(Nsimu, Nrepet, sVN)
-
 stm <- standardMinimal(Nsimu, Nrepet, sVN)
 
 # max valeur possible 
@@ -46,19 +49,13 @@ hist(ru[,1], breaks=seq(0,max_ru,length=20), xlab='', main='RANDU')
 hist(stm[,1], breaks=seq(0,max_stm,length=20), xlab='', 
      main='Standad Minimal')
 
-# Visualiation de donnees generees sous forme des nuages des points (scatterplot) 
-# sur le meme graphique
-# chaque donnee est prise en fonction de la donnee precedente
-par(mfrow=c(2,2))
-plot(vn[1:(Nsimu-1),1], vn[2:Nsimu,1], xlab='VN(i)', ylab='VN(i+1)', 
-     main='Von Neumann')
-plot(mt[1:(Nsimu-1),1], mt[2:Nsimu,1], xlab='MT(i)', ylab='MT(i+1)', 
-     main='Mersenne Twister')
-plot(ru[1:(Nsimu-1),1], ru[2:Nsimu,1], xlab='RU(i)', ylab='RU(i+1)', 
-     main='RANDU')
-plot(stm[1:(Nsimu-1),1], stm[2:Nsimu,1], xlab='STM(i)', ylab='STM(i+1)', 
-     main='Standard Minimal')
+```
 
-# Sequence de bits pour les tests
-(bit_mt <- binary(mt[1,1]))
+La méthode de Von Neumann ne semble pas satisfaisante pour générer des nombres aléatoires
+suivant une loi uniforme. On peut remarquer des valeurs absorbantes. Les trois
+autres méthodes semblent quant à elles fournir des résultats plutôt satisfaisants.
+On peut supposer d'après le graphique que l'écart-type est assez faible pour ces trois méthodes.
+
+Question 2.2
+---
 
