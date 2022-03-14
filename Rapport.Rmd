@@ -21,7 +21,7 @@ Nsimu <- 1000 # nombre de simulations (nombre d'entiers par sequences generee)
 Nrepet <- 20 # nombre de repetitions (nombre de sequences generees)
 ```
 
-## Partie 1
+## Partie 1 : Tests de générateurs pseudo-aléatoires
 
 ### Question 2.1
 
@@ -154,3 +154,66 @@ order.test(vec_stm, d = 4, echo = FALSE)$p.value
 | P_valeur   | 0           | 0.65             | 0.81  | 0.59             |
 
 On peut tirer de ce test les mêmes conclusions qu'à la question précédente.
+
+## Partie 2 : Simulations de lois de probabilités quelconques
+
+### Question bonus 1
+
+Fonction représentant la loi binomiale (compte le nombre de succès):
+```{r}
+LoiBinomiale <- function(n, p)
+{
+  sum <- 0
+  for (i in 1:n)
+  {
+    if (runif(1) <= p)
+      sum <- sum + 1
+  }
+  return(sum)
+}
+```
+
+Test de la fonction pour n = 10 et p = 0.7 (sur 1000 réalisations) et comparaison
+du résultat obtenu avec la densité de la loi Gaussienne N(np, np(1-p))
+```{r}
+# initialisation
+n <- 10
+p <- 0.7
+# réalisations
+valeurs <- array(numeric(),c(0))
+for (i in 1:1000) {
+  valeurs <- append(valeurs, LoiBinomiale(n, p))
+}
+# calcul de la gaussienne pour des valeurs discrètes
+gaussienne <- array(numeric(), c(0))
+for (i in 1:15) {
+  gaussienne <- append(gaussienne, dnorm(i, n*p, sqrt(n*p*(1-p))) * 1000)
+}
+
+par(mfrow=c(1,1))
+plot(table(valeurs), 
+     col="blue",
+     xlab = "nombre de succès",
+     ylab = "nombre de réalisations",
+     main = "Loi binomiale (n=10, p=0.7)")
+
+lines(gaussienne,
+      lwd = 2,
+      col = "chocolate3")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

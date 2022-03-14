@@ -142,3 +142,14 @@ Runs <- function(x, nb)
   }
   return(p_vals)
 }
+
+LoiBinomiale <- function(n, p)
+{
+  sum <- 0
+  for (i in 1:n)
+  {
+    if (runif(1) <= p)
+      sum <- sum + 1
+  }
+  return(sum)
+}
