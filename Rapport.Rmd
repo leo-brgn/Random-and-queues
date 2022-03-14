@@ -90,9 +90,12 @@ p_stm<- sum(p_stm)/length(p_stm)
 
 | Algorithme | Von Neumann | Mersenne Twister | RANDU | Standard minimal |
 |------------|-------------|------------------|-------|------------------|
-| P_valeur   | 0.00018     | 0.507            | 0.506 | 0.467            |
+| P_valeur   | 0.00018     | 0.507            | 0.506 | 0.495            |
 
 Pour valider l'hypothèse que l'algorithme produit une séquence aléatoire, il faut 
 que P_valeur soit strictement supérieur à 0.01. De ce fait, l'algorithme de Von
 Neumann n'est clairment pas satisfaisant. Toutefois les trois autres algorithmes
 le sont.
+
+
+### Question 4

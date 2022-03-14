@@ -41,6 +41,56 @@
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -73,7 +123,7 @@
 \subsection{Partie 1}\label{partie-1}}
 
 \hypertarget{question-2.1}{%
-\subsection{Question 2.1}\label{question-2.1}}
+\subsubsection{Question 2.1}\label{question-2.1}}
 
 \includegraphics{Rapport_files/figure-latex/unnamed-chunk-1-1.pdf}
 
@@ -84,6 +134,67 @@ fournir des résultats plutôt satisfaisants. On peut supposer d'après le
 graphique que l'écart-type est assez faible pour ces trois méthodes.
 
 \hypertarget{question-2.2}{%
-\subsection{Question 2.2}\label{question-2.2}}
+\subsubsection{Question 2.2}\label{question-2.2}}
+
+\includegraphics{Rapport_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+Ce mode de visualisation nous permet de voir si la valeur donnée par
+l'algorithme dépend ou non de la valeur précédente. On remarque que pour
+tous les algorithmes sauf celui de Von Neumann, il ne semble pas y avoir
+de corrélation entre les valeurs de rang N et N+1. En effet, on ne voit
+pas de courbe ou de droite se dessiner et les valeurs sont au contraire
+très dispersées sur les graphiques.
+
+\hypertarget{question-3}{%
+\subsubsection{Question 3}\label{question-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fr\_mt }\OtherTok{\textless{}{-}} \FunctionTok{Frequency}\NormalTok{(mt,}\DecValTok{32}\NormalTok{)}
+\NormalTok{fr\_vn }\OtherTok{\textless{}{-}} \FunctionTok{Frequency}\NormalTok{(vn,}\DecValTok{14}\NormalTok{)}
+\NormalTok{fr\_ru }\OtherTok{\textless{}{-}} \FunctionTok{Frequency}\NormalTok{(ru,}\DecValTok{31}\NormalTok{)}
+\NormalTok{fr\_stm }\OtherTok{\textless{}{-}} \FunctionTok{Frequency}\NormalTok{(stm,}\DecValTok{31}\NormalTok{)}
+\NormalTok{p\_mt }\OtherTok{\textless{}{-}} \DecValTok{2} \SpecialCharTok{*}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{{-}}\FunctionTok{pnorm}\NormalTok{(fr\_mt))}
+\NormalTok{p\_mt }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(p\_mt)}\SpecialCharTok{/}\FunctionTok{length}\NormalTok{(p\_mt)}
+\NormalTok{p\_vn }\OtherTok{\textless{}{-}} \DecValTok{2} \SpecialCharTok{*}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{{-}}\FunctionTok{pnorm}\NormalTok{(fr\_vn))}
+\NormalTok{p\_vn }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(p\_vn)}\SpecialCharTok{/}\FunctionTok{length}\NormalTok{(p\_vn)}
+\NormalTok{p\_ru }\OtherTok{\textless{}{-}} \DecValTok{2} \SpecialCharTok{*}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{{-}}\FunctionTok{pnorm}\NormalTok{(fr\_ru))}
+\NormalTok{p\_ru }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(p\_ru)}\SpecialCharTok{/}\FunctionTok{length}\NormalTok{(p\_ru)}
+\NormalTok{p\_stm }\OtherTok{\textless{}{-}} \DecValTok{2} \SpecialCharTok{*}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{{-}}\FunctionTok{pnorm}\NormalTok{(fr\_stm))}
+\NormalTok{p\_stm}\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(p\_stm)}\SpecialCharTok{/}\FunctionTok{length}\NormalTok{(p\_stm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1912}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2647}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1029}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2647}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+Algorithme
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Von Neumann
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mersenne Twister
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+RANDU
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Standard minimal
+\end{minipage} \\
+\midrule
+\endhead
+P\_valeur & 0.00018 & 0.507 & 0.506 & 0.467 \\
+\bottomrule
+\end{longtable}
+
+Pour valider l'hypothèse que l'algorithme produit une séquence
+aléatoire, il faut que P\_valeur soit strictement supérieur à 0.01. De
+ce fait, l'algorithme de Von Neumann n'est clairement pas satisfaisant.
+Toutefois les trois autres algorithmes le sont.
+
+\hypertarget{question-4}{%
+\subsubsection{Question 4}\label{question-4}}
 
 \end{document}

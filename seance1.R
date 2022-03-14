@@ -60,10 +60,23 @@ plot(stm[1:(Nsimu-1),1], stm[2:Nsimu,1], xlab='STM(i)', ylab='STM(i+1)',
      main='Standard Minimal')
 
 # Tests sur les séquences de bits
-fr_mt <- Frequency(mt,32)
-fr_vn <- Frequency(vn,14)
-fr_ru <- Frequency(ru,31)
-fr_stm <- Frequency(stm,31)
+vec_mt <- mt
+vec_vn <- vn
+vec_ru <- ru
+vec_stm <- stm
+graines <- sample.int(10000,100)
+for (i in 1:100)
+{
+  vec_mt <- append(vec_mt, MersenneTwister(Nsimu, Nrepet, graines[i]))
+  vec_vn <- append(vec_vn, VonNeumann(Nsimu, Nrepet, graines[i]))
+  vec_ru <- append(vec_ru, randu(Nsimu, Nrepet, graines[i]))
+  vec_stm <- append(vec_stm, standardMinimal(Nsimu, Nrepet, graines[i]))
+}
+
+fr_mt <- Frequency(vec_mt,32)
+fr_vn <- Frequency(vec_vn,14)
+fr_ru <- Frequency(vec_ru,31)
+fr_stm <- Frequency(vec_stm,31)
 p_mt <- 2 * (1-pnorm(fr_mt))
 p_mt <- sum(p_mt)/length(p_mt)
 p_vn <- 2 * (1-pnorm(fr_vn))
