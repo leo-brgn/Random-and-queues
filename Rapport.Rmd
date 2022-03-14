@@ -92,6 +92,34 @@ for (i in 1:25)
 }
 ```
 
+Fonctions Frequency (appliquée sur le vecteur x) :
+```{r}
+Frequency <- function(x, nb)
+{
+  s_obs <- rep(0, length(x))
+  
+  for (i in 1:length(x))
+  {
+    bit_x <- rev(binary(x[i]))
+    s <- 0
+    for (j in 1:nb)
+    {
+      if (bit_x[j] == 0)
+      {
+        s <- s - 1
+      } else {
+        s <-s + 1
+      }
+    }
+    s <- abs(s)
+    s_obs[i] <- s / sqrt(nb)
+  }
+  return(s_obs)
+}
+```
+
+Test de la fonction sur les différents algorithmes :
+
 ```{r}
 # Test de fréquence monobit
 fr_mt <- Frequency(vec_mt,32)
@@ -120,6 +148,33 @@ le sont.
 
 
 ### Question 4
+
+Fonction Runs (retourne un vecteur avec la valeur p pour chaque valeur du vecteur x) :
+```{r}
+Runs <- function(x, nb)
+{
+  p_vals <- rep(0, length(x))
+  tau = 2 / sqrt(nb)
+
+  for (i in 1:length(x))
+  {
+    bit_x <- rev(binary(x[i]))
+    Pi <- sum(bit_x[1:nb])
+    Pi <- Pi / nb
+    if (Pi - 0.5 >= tau)
+    {
+      p_vals[i] = 0
+    } else {
+      v <- sum(bit_x[1:nb]) + 1
+      p_vals[i] <- 2 * (1-pnorm((abs(v - 2 * nb * Pi * (1-Pi)))/(2*sqrt(nb)*Pi*(1-Pi))))
+      
+    }
+  }
+  return(p_vals)
+}
+``` 
+
+Test de la fonction sur les différents algorithmes:
 
 ```{r}
 # Test des runs
@@ -174,7 +229,8 @@ LoiBinomiale <- function(n, p)
 ```
 
 Test de la fonction pour n = 10 et p = 0.7 (sur 1000 réalisations) et comparaison
-du résultat obtenu avec la densité de la loi Gaussienne N(np, np(1-p))
+du résultat obtenu avec la densité de la loi Gaussienne N(np, np(1-p)) :
+
 ```{r}
 # initialisation
 n <- 10
@@ -202,12 +258,8 @@ lines(gaussienne,
       col = "chocolate3")
 ```
 
-
-
-
-
-
-
+On peut voir que les résultats calculés pour la loi binomiale correspondent plutôt
+bien à la courbe de la gaussienne.
 
 
 
