@@ -73,11 +73,32 @@ Ce mode de visualisation nous permet de voir si la valeur donnée par l'algorith
 
 ### Question 3
 
+Initialisation des données pour les tests:
 ```{r}
-fr_mt <- Frequency(mt,32)
-fr_vn <- Frequency(vn,14)
-fr_ru <- Frequency(ru,31)
-fr_stm <- Frequency(stm,31)
+# Initialisation des vecteurs de tests avec les vecteurs déjà générés
+vec_mt <- mt
+vec_vn <- vn
+vec_ru <- ru
+vec_stm <- stm
+# génération des graines
+graines <- sample.int(10000,25)
+# génération des nombres aléatoires pour chaque graine et pour chaque algorithme
+for (i in 1:25)
+{
+  vec_mt <- append(vec_mt, MersenneTwister(Nsimu, Nrepet, graines[i]))
+  vec_vn <- append(vec_vn, VonNeumann(Nsimu, Nrepet, graines[i]))
+  vec_ru <- append(vec_ru, randu(Nsimu, Nrepet, graines[i]))
+  vec_stm <- append(vec_stm, standardMinimal(Nsimu, Nrepet, graines[i]))
+}
+```
+
+```{r}
+# Test de fréquence monobit
+fr_mt <- Frequency(vec_mt,32)
+fr_vn <- Frequency(vec_vn,14)
+fr_ru <- Frequency(vec_ru,31)
+fr_stm <- Frequency(vec_stm,31)
+
 p_mt <- 2 * (1-pnorm(fr_mt))
 p_mt <- sum(p_mt)/length(p_mt)
 p_vn <- 2 * (1-pnorm(fr_vn))
@@ -90,7 +111,7 @@ p_stm<- sum(p_stm)/length(p_stm)
 
 | Algorithme | Von Neumann | Mersenne Twister | RANDU | Standard minimal |
 |------------|-------------|------------------|-------|------------------|
-| P_valeur   | 0.00018     | 0.507            | 0.506 | 0.495            |
+| P_valeur   | 0.00018     | 0.506            | 0.498 | 0.495            |
 
 Pour valider l'hypothèse que l'algorithme produit une séquence aléatoire, il faut 
 que P_valeur soit strictement supérieur à 0.01. De ce fait, l'algorithme de Von
@@ -99,3 +120,37 @@ le sont.
 
 
 ### Question 4
+
+```{r}
+# Test des runs
+p_mt <- Runs(mt,32)
+p_vn <- Runs(vn,14)
+p_ru <- Runs(ru,31)
+p_stm <- Runs(stm,31)
+p_mt <- mean(p_mt < 0.01)
+p_vn <- mean(p_vn < 0.01)
+p_ru <- mean(p_ru < 0.01)
+p_stm <- mean(p_stm < 0.01)
+```
+
+| Algorithme | Von Neumann | Mersenne Twister | RANDU | Standard minimal |
+|------------|-------------|------------------|-------|------------------|
+| P_valeur   | 0%          | 5.36%            | 9.28% | 7.457%           |
+
+Encore une fois on remarque que l'algorithme de Von Neumann ne permet pas de 
+produire des nombres aléatoires.
+
+### Question 5
+```{r}
+# Tests d'ordre
+order.test(vec_mt, d = 4, echo = FALSE)$p.value
+order.test(vec_vn, d = 4, echo = FALSE)$p.value
+order.test(vec_ru, d = 4, echo = FALSE)$p.value
+order.test(vec_stm, d = 4, echo = FALSE)$p.value
+```
+
+| Algorithme | Von Neumann | Mersenne Twister | RANDU | Standard minimal |
+|------------|-------------|------------------|-------|------------------|
+| P_valeur   | 0           | 0.65             | 0.81  | 0.59             |
+
+On peut tirer de ce test les mêmes conclusions qu'à la question précédente.
